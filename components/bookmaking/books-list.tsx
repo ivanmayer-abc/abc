@@ -69,7 +69,6 @@ export default function BooksList({ onBookSelect, selectedBook }: BooksListProps
               </span>
               <div className="flex space-x-4 text-sm text-gray-500">
                 <span>{book.events.length} events</span>
-                <span>{book.bets.length} bets</span>
                 <span>{new Date(book.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
