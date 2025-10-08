@@ -1,6 +1,8 @@
+import CompactRouletteTable from "@/components/roulette/roulette";
+
 const Roulette = () => {
     return ( 
-        <div>roulette</div>
+        <CompactRouletteTable />
     );
 }
  

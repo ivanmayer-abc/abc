@@ -24,11 +24,6 @@ export const useBalance = () => {
       
       let displayText = formatter.format(data.balance.available);
       
-      if (data.balance.netPending !== 0) {
-        const sign = data.balance.netPending > 0 ? '+' : '-';
-        displayText += ` (${sign}${formatter.format(Math.abs(data.balance.netPending))})`;
-      }
-      
       setFormattedBalance(displayText);
     } catch (error) {
       console.error('Error fetching balance:', error);

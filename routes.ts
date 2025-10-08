@@ -1,8 +1,8 @@
 export const publicRoutes = [
     '/',
+    '/book',
     '/slots',
     '/roulette',
-    '/live',
     '/instant',
     '/new-verification'
 ]

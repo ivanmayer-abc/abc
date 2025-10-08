@@ -1,4 +1,3 @@
-// app/api/bookmaking/client/bets/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
@@ -9,16 +8,16 @@ export async function DELETE(
 ) {
   try {
     const user = await currentUser()
-    if (!user?.id) return new NextResponse("Unauthorized", { status: 401 })
+    if (!user?.id) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
 
     const { id } = params
 
-    // Check if bet exists and belongs to user
     const bet = await db.bet.findFirst({
       where: {
         id,
-        userId: user.id,
-        status: 'PENDING'
+        userId: user.id
       },
       include: {
         book: true,
@@ -28,30 +27,23 @@ export async function DELETE(
     })
 
     if (!bet) {
-      return new NextResponse("Bet not found or cannot be cancelled", { status: 404 })
+      return new NextResponse("Bet not found", { status: 404 })
     }
 
-    // Check if book hasn't started yet
+    if (bet.status !== 'PENDING' && bet.status !== 'CANCELLED') {
+      return new NextResponse(`Cannot delete bet that is already ${bet.status}`, { status: 400 })
+    }
+
     const now = new Date()
     const bookDate = new Date(bet.book.date)
-    if (now >= bookDate) {
+    if (now >= bookDate && bet.status === 'PENDING') {
       return new NextResponse("Cannot cancel bet after book has started", { status: 400 })
     }
 
-    // Cancel the bet and related transactions in a single transaction
     const result = await db.$transaction(async (tx) => {
-      // 1. Update bet status to CANCELLED
-      const updatedBet = await tx.bet.update({
-        where: { id },
-        data: { 
-          status: 'CANCELLED',
-          settledAt: new Date()
-        }
-      })
+      let deletedTransactions = 0
+      let refundAmount = 0
 
-      console.log(`✅ Bet ${id} cancelled`)
-
-      // 2. Find the withdrawal transaction (the stake amount that was deducted)
       const withdrawalTransaction = await tx.transaction.findFirst({
         where: {
           userId: user.id,
@@ -65,7 +57,6 @@ export async function DELETE(
         }
       })
 
-      // 3. Find the pending deposit transaction (potential winnings)
       const pendingDepositTransaction = await tx.transaction.findFirst({
         where: {
           id: bet.transactionId || undefined,
@@ -75,55 +66,63 @@ export async function DELETE(
         }
       })
 
-      // 4. Update the withdrawal transaction to cancelled instead of creating refund
       if (withdrawalTransaction) {
-        await tx.transaction.update({
-          where: { id: withdrawalTransaction.id },
-          data: {
-            status: 'fail',
-            description: `Cancelled: ${withdrawalTransaction.description}`
-          }
+        await tx.transaction.delete({
+          where: { id: withdrawalTransaction.id }
         })
-        console.log(`❌ Withdrawal transaction cancelled: ₹${bet.amount}`)
+        deletedTransactions++
+        refundAmount = bet.amount
       }
 
-      // 5. Update the pending deposit transaction to cancelled
       if (pendingDepositTransaction) {
-        await tx.transaction.update({
-          where: { id: pendingDepositTransaction.id },
-          data: {
-            status: 'fail',
-            description: `Cancelled: ${pendingDepositTransaction.description}`
-          }
+        await tx.transaction.delete({
+          where: { id: pendingDepositTransaction.id }
         })
-        console.log(`❌ Pending winnings transaction cancelled`)
+        deletedTransactions++
       }
 
-      // 6. Decrease the outcome stake
-      await tx.outcome.update({
-        where: { id: bet.outcomeId },
-        data: {
-          stake: {
-            decrement: bet.amount
+      if (bet.status === 'PENDING') {
+        await tx.outcome.update({
+          where: { id: bet.outcomeId },
+          data: {
+            stake: {
+              decrement: bet.amount
+            }
           }
-        }
+        })
+      }
+
+      const deletedBet = await tx.bet.delete({
+        where: { id }
       })
 
-      console.log(`📉 Outcome stake decreased by: ₹${bet.amount}`)
-
       return {
-        bet: updatedBet,
-        refundAmount: bet.amount
+        deletedBet,
+        deletedTransactions,
+        refundAmount
       }
     })
 
     return NextResponse.json({
-      message: 'Bet cancelled successfully',
-      refundAmount: result.refundAmount
+      success: true,
+      message: 'Bet and related transactions deleted successfully',
+      data: {
+        betId: id,
+        deletedTransactions: result.deletedTransactions,
+        refundAmount: result.refundAmount
+      }
     })
 
-  } catch (error) {
-    console.log('[CLIENT_BETS_DELETE]', error)
-    return new NextResponse("Internal error", { status: 500 })
+  } catch (error: any) {
+    
+    if (error.message?.includes('cannot be deleted')) {
+      return new NextResponse(error.message, { status: 400 })
+    }
+    
+    if (error.code === 'P2003') {
+      return new NextResponse("Cannot delete bet due to database constraints", { status: 400 })
+    }
+    
+    return new NextResponse("Internal server error", { status: 500 })
   }
 }

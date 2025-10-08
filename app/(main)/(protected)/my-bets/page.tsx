@@ -1,4 +1,3 @@
-// app/my-bets/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,8 +5,23 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, X, Calendar, BookOpen } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, X, Calendar, BookOpen, ArrowRight, IndianRupee } from 'lucide-react'
 import { formatter } from '@/lib/utils'
 import Link from 'next/link'
 import { useBalanceContext } from '@/contexts/balance-context'
@@ -41,10 +55,14 @@ interface UserBet {
   }
 }
 
+const ITEMS_PER_PAGE = 10
+
 export default function MyBetsPage() {
   const [userBets, setUserBets] = useState<UserBet[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'won' | 'lost'>('all')
+  const [cancellingBets, setCancellingBets] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(1)
   const { refreshBalance } = useBalanceContext();
 
   useEffect(() => {
@@ -67,6 +85,8 @@ export default function MyBetsPage() {
   }
 
   const handleCancelBet = async (betId: string) => {
+    setCancellingBets(prev => new Set(prev).add(betId));
+    
     const cancelPromise = new Promise(async (resolve, reject) => {
       try {
         const response = await fetch(`/api/bookmaking/client/bets/${betId}`, {
@@ -84,6 +104,12 @@ export default function MyBetsPage() {
       } catch (error) {
         console.error('Error cancelling bet:', error)
         reject('Error cancelling bet')
+      } finally {
+        setCancellingBets(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(betId);
+          return newSet;
+        });
       }
     })
 
@@ -94,7 +120,6 @@ export default function MyBetsPage() {
     })
   }
 
-  // Filter bets based on selected filter
   const filteredBets = userBets.filter(bet => {
     if (filter === 'all') return true
     if (filter === 'pending') return bet.status === 'PENDING'
@@ -103,7 +128,11 @@ export default function MyBetsPage() {
     return true
   })
 
-  // Calculate total stats for user bets
+  const totalPages = Math.ceil(filteredBets.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const currentBets = filteredBets.slice(startIndex, endIndex)
+
   const calculateBetStats = () => {
     const totalBets = userBets.length
     const totalStaked = userBets.reduce((sum, bet) => sum + bet.amount, 0)
@@ -112,7 +141,7 @@ export default function MyBetsPage() {
       .reduce((sum, bet) => sum + bet.potentialWin, 0)
     const totalWon = userBets
       .filter(bet => bet.status === 'WON')
-      .reduce((sum, bet) => sum + (bet.potentialWin - bet.amount), 0)
+      .reduce((sum, bet) => sum + (bet.potentialWin), 0)
     const totalLost = userBets
       .filter(bet => bet.status === 'LOST')
       .reduce((sum, bet) => sum + bet.amount, 0)
@@ -129,37 +158,23 @@ export default function MyBetsPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">My bets</h1>
           <Link href="/book">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Books
+              Go to events
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">My Bets</h1>
         </div>
       </div>
 
-      {/* Bet Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{betStats.totalBets}</div>
             <div className="text-sm text-muted-foreground">Total Bets</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">{formatter.format(betStats.totalStaked)}</div>
-            <div className="text-sm text-muted-foreground">Total Staked</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{formatter.format(betStats.totalPotentialWin)}</div>
-            <div className="text-sm text-muted-foreground">Potential Win</div>
           </CardContent>
         </Card>
         <Card>
@@ -170,55 +185,45 @@ export default function MyBetsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{formatter.format(betStats.totalLost)}</div>
-            <div className="text-sm text-muted-foreground">Total Lost</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className={`text-2xl font-bold ${
-              betStats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {formatter.format(betStats.netProfit)}
-            </div>
-            <div className="text-sm text-muted-foreground">Net Profit</div>
+            <div className="text-2xl font-bold text-blue-600">{formatter.format(betStats.totalPotentialWin)}</div>
+            <div className="text-sm text-muted-foreground">Potential Win</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter Buttons */}
       <div className="flex gap-2">
         <Button
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setFilter('all')}
+          onClick={() => {
+            setFilter('all')
+            setCurrentPage(1)
+          }}
         >
           All Bets
         </Button>
         <Button
-          variant={filter === 'pending' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('pending')}
-        >
-          Pending
-        </Button>
-        <Button
           variant={filter === 'won' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setFilter('won')}
+          onClick={() => {
+            setFilter('won')
+            setCurrentPage(1)
+          }}
         >
           Won
         </Button>
         <Button
-          variant={filter === 'lost' ? 'default' : 'outline'}
+          variant={filter === 'pending' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => setFilter('lost')}
+          onClick={() => {
+            setFilter('pending')
+            setCurrentPage(1)
+          }}
         >
-          Lost
+          Pending
         </Button>
       </div>
 
-      {/* Bets List */}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -227,101 +232,188 @@ export default function MyBetsPage() {
              filter === 'won' ? 'Won Bets' : 'Lost Bets'}
           </CardTitle>
           <CardDescription>
-            {filteredBets.length} {filteredBets.length === 1 ? 'bet' : 'bets'} found
+            Showing {currentBets.length} of {filteredBets.length} {filteredBets.length === 1 ? 'bet' : 'bets'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredBets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No bets found for the selected filter.</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredBets.map((bet) => {
-                const isBookAcceptingBets = new Date() < new Date(bet.book.date)
-                const bookStatus = bet.book.displayStatus || (bet.book.isLive ? 'LIVE' : bet.book.isUpcoming ? 'UPCOMING' : bet.book.status)
-                
-                return (
-                  <Card key={bet.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Link href={`/book/${bet.book.id}`}>
-                            <h4 className="font-semibold hover:text-primary cursor-pointer">
-                              {bet.book.title}
-                            </h4>
-                          </Link>
-                          <Badge variant="secondary" className="text-xs">
-                            {bet.book.category}
-                          </Badge>
-                          <Badge variant={
-                            bookStatus === 'LIVE' ? 'default' : 
-                            bookStatus === 'UPCOMING' ? 'secondary' : 'outline'
-                          } className="text-xs">
-                            {bookStatus.toLowerCase()}
-                          </Badge>
-                          <Badge variant={
-                            bet.status === 'PENDING' ? 'secondary' :
-                            bet.status === 'WON' ? 'default' :
-                            bet.status === 'LOST' ? 'destructive' : 'outline'
-                          }>
-                            {bet.status.toLowerCase()}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">Event:</span> {bet.event.name}
-                          </p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">Outcome:</span> {bet.outcome.name}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-sm">
-                          <span>Stake: {formatter.format(bet.amount)}</span>
-                          <span>Odds: {bet.odds.toFixed(2)}</span>
-                          <span>Potential Win: {formatter.format(bet.potentialWin)}</span>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Placed: {new Date(bet.createdAt).toLocaleString()}
-                          </span>
-                          {bet.settledAt && (
-                            <span className="flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" />
-                              Settled: {new Date(bet.settledAt).toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className='pl-4'>Event</TableHead>
+                      <TableHead>Outcome</TableHead>
+                      <TableHead>Stake</TableHead>
+                      <TableHead>Odds</TableHead>
+                      <TableHead>Potential Win</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-center">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentBets.map((bet) => {
+                      const isBookAcceptingBets = new Date() < new Date(bet.book.date)
+                      const bookStatus = bet.book.displayStatus || (bet.book.isLive ? 'LIVE' : bet.book.isUpcoming ? 'UPCOMING' : bet.book.status)
                       
-                      <div className="flex items-center gap-2">
-                        {bet.status === 'PENDING' && isBookAcceptingBets && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCancelBet(bet.id)}
-                            className="text-destructive hover:bg-destructive/10"
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Cancel
-                          </Button>
-                        )}
-                        {bet.status === 'WON' && (
-                          <TrendingUp className="h-5 w-5 text-green-600" />
-                        )}
-                        {bet.status === 'LOST' && (
-                          <TrendingDown className="h-5 w-5 text-red-600" />
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                )
-              })}
+                      return (
+                        <TableRow key={bet.id}>
+                          <TableCell>
+                            <div className="flex flex-col space-y-1 pl-2">
+                              {bet.book.status === "ACTIVE" ? (
+                                <Link href={`/book/${bet.book.id}`}>
+                                  <div className="font-medium hover:text-primary cursor-pointer">
+                                    {bet.book.title}
+                                  </div>
+                                </Link>
+                                ) : (
+                                  <div className="font-medium hover:text-primary">
+                                    {bet.book.title}
+                                  </div>
+                                )}
+                              <div className="text-sm text-muted-foreground">
+                                {bet.event.name}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  {bet.book.category}
+                                </Badge>
+                                <Badge variant={
+                                  bookStatus === 'LIVE' ? 'default' : 
+                                  bookStatus === 'UPCOMING' ? 'secondary' : 'outline'
+                                } className="text-xs">
+                                  {bookStatus.toLowerCase()}
+                                </Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{bet.outcome.name}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{formatter.format(bet.amount)}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{bet.odds.toFixed(2)}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium text-blue-600">
+                              {formatter.format(bet.potentialWin)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={
+                              bet.status === 'PENDING' ? 'secondary' :
+                              bet.status === 'WON' ? 'default' :
+                              bet.status === 'LOST' ? 'destructive' : 'outline'
+                            }>
+                              {bet.status.toLowerCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(bet.book.date).toLocaleString('en-IN', {
+                                timeZone: 'Asia/Kolkata',
+                                year: 'numeric',
+                                month: 'long',
+                                day: '2-digit',
+                              })}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(bet.book.date).toLocaleTimeString('en-IN', {
+                                timeZone: 'Asia/Kolkata',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                              })}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {bet.status === 'PENDING' && isBookAcceptingBets && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCancelBet(bet.id)}
+                                  disabled={cancellingBets.has(bet.id)}
+                                  className="text-destructive hover:bg-destructive/10"
+                                >
+                                  {cancellingBets.has(bet.id) ? (
+                                    <>
+                                      <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
+                                      Cancelling...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <X className="h-4 w-4 mr-1" />
+                                      Cancel
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                              {bet.status === 'WON' && (
+                                <TrendingUp className="h-5 w-5 text-green-600" />
+                              )}
+                              {bet.status === 'LOST' && (
+                                <TrendingDown className="h-5 w-5 text-red-600" />
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {totalPages > 1 && (
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(prev => Math.max(prev - 1, 1))
+                        }}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCurrentPage(page)
+                          }}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                        }}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
             </div>
           )}
         </CardContent>
@@ -338,25 +430,34 @@ function LoadingSkeleton() {
         <Skeleton className="h-8 w-32" />
       </div>
       
-      {/* Statistics Skeletons */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <Skeleton key={i} className="h-20 rounded-lg" />
         ))}
       </div>
 
-      {/* Filter Skeletons */}
       <div className="flex gap-2">
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-8 w-20" />
         ))}
       </div>
 
-      {/* Bets List Skeletons */}
       <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 rounded-lg" />
-        ))}
+        <div className="rounded-md border">
+          <div className="p-4 border-b">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </div>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="p-4 border-b flex items-center space-x-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

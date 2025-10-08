@@ -1,4 +1,3 @@
-// app/api/bookmaking/client/books/route.ts
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
@@ -40,7 +39,6 @@ export async function GET(request: Request) {
       }
     })
 
-    // Calculate display status and bet acceptance
     const booksWithBetInfo = books.map(book => {
       const now = new Date()
       const bookDate = new Date(book.date)

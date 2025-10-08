@@ -40,7 +40,6 @@ export default function ClientBookmakingDashboard() {
     try {
       setLoading(true)
       
-      // Fetch books for current category
       const booksUrl = categoryParam 
         ? `/api/bookmaking/client/books?category=${encodeURIComponent(categoryParam)}`
         : '/api/bookmaking/client/books'
@@ -56,7 +55,6 @@ export default function ClientBookmakingDashboard() {
         console.error('Failed to fetch books:', booksResponse.status)
       }
 
-      // Always fetch all categories to show in navigation
       const categoriesResponse = await fetch('/api/bookmaking/client/books')
       if (categoriesResponse.ok) {
         const allBooks: Book[] = await categoriesResponse.json()
@@ -73,7 +71,6 @@ export default function ClientBookmakingDashboard() {
   }
 
   const handleOutcomeClick = (outcome: any, event: any, book: any) => {
-    // Check if book date hasn't started yet
     const now = new Date()
     const bookDate = new Date(book.date)
     
@@ -98,12 +95,10 @@ export default function ClientBookmakingDashboard() {
     fetchBooksAndCategories()
   }
 
-  // Function to format category for display (capitalize first letter)
   const formatCategoryForDisplay = (category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
   }
 
-  // Function to format category for URL (lowercase)
   const formatCategoryForURL = (category: string) => {
     return category.toLowerCase()
   }
@@ -123,7 +118,6 @@ export default function ClientBookmakingDashboard() {
         </p>
       </div>
 
-      {/* Category Links */}
       {categories.length > 0 && (
         <Card className="bg-card border-border">
           <CardContent className="p-4">

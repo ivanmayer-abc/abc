@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { UserButton } from "@/components/auth/user-button";
 import Balance from "@/components/balance";
-import { CirclePlus, PlusIcon } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import Link from "next/link";
 
 const HeaderAuth = async () => {

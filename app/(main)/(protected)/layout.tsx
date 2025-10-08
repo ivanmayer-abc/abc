@@ -21,7 +21,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
         setMenuVisible(menuState);
         if (menuState) {
             setMenuOpacity(100);
-            setVisibleButtons(5);
+            setVisibleButtons(6);
         }
     }, []);
 
@@ -40,7 +40,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
                 let index = 0;
                 const interval = setInterval(() => {
                     setVisibleButtons((prev) => {
-                        if (prev >= 5) {
+                        if (prev >= 6) {
                             clearInterval(interval);
                             return prev;
                         }
@@ -58,12 +58,13 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
     useEffect(() => {
         if (isMenuVisible) {
             setMenuOpacity(100);
-            setVisibleButtons(5);
+            setVisibleButtons(6);
         }
     }, [isMenuVisible]);
 
     const menuItems = [
         { label: "Main", to: "/profile" },
+        { label: "My bets", to: "/my-bets" },
         { label: "Transactions", to: "/transactions" },
         { label: "History", to: "/history" },
         { label: "Support", to: "/support" },
