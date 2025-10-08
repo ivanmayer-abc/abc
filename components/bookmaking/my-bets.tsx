@@ -84,7 +84,7 @@ export default function MyBets() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <p className="text-muted-foreground">You haven't placed any bets yet.</p>
+              <p className="text-muted-foreground">You haven&apos;t placed any bets yet.</p>
               <p className="text-sm text-muted-foreground">Browse available books to place your first bet!</p>
             </div>
           </CardContent>

@@ -214,7 +214,7 @@ export default function BookPage() {
             <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Book not found</h3>
             <p className="text-muted-foreground mb-4">
-              The book you're looking for doesn't exist or is no longer available.
+              The book you&apos;re looking for doesn&apos;t exist or is no longer available.
             </p>
             <Link href="/book">
               <Button variant="outline">
@@ -506,7 +506,7 @@ export default function BookPage() {
             {userBets.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>You haven't placed any bets on this book yet.</p>
+                <p>You haven&apos;t placed any bets on this book yet.</p>
               </div>
             ) : (
               <div className="space-y-4">
