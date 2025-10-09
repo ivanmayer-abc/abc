@@ -1,17 +1,19 @@
 export interface Book {
   id: string
   title: string
-  description?: string | null
-  date: Date
+  description: string | null
   category: string
-  status: string
-  createdAt: Date
-  updatedAt: Date
-  teams?: Team[]
-  events?: Event[]
+  image: string | null
+  date: Date | string
+  status: 'ACTIVE' | 'INACTIVE' | 'COMPLETED'
+  createdAt: Date | string
+  updatedAt: Date | string
   isLive?: boolean
   isUpcoming?: boolean
+  isAcceptingBets?: boolean
   displayStatus?: string
+  teams?: Team[]
+  events?: Event[]
 }
 
 export interface Event {

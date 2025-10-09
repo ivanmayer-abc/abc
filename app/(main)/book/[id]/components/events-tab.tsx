@@ -47,20 +47,26 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
   const handleBetPlaced = () => {
     setIsSlipOpen(false)
     setSelectedOutcome(null)
-    // In a real app, you might want to refresh the data here
-    window.location.reload() // Simple refresh for demo
+    window.location.reload()
   }
 
-  // Add user stake information to outcomes
-  const eventsWithUserStake = book.events.map(event => ({
+  const eventsWithUserStake = (book.events || []).map(event => ({
     ...event,
-    outcomes: event.outcomes.map(outcome => ({
+    outcomes: (event.outcomes || []).map(outcome => ({
       ...outcome,
       userStake: userBets
         .filter(bet => bet.outcomeId === outcome.id)
         .reduce((total, bet) => total + bet.amount, 0)
     }))
   }))
+
+  const getOutcomeGridClass = (outcomesCount: number) => {
+    if (outcomesCount <= 4) {
+      return "grid grid-cols-2 lg:flex lg:flex-row lg:gap-4 gap-1"
+    } else {
+      return "grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+    }
+  }
 
   return (
     <>
@@ -76,80 +82,79 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
             }
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-4 sm:space-y-8 p-2 lg:p-6 -mt-4 lg:mt-0">
           {eventsWithUserStake.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No active events in this book at the moment.</p>
+            <div className="text-center py-6 sm:py-8 text-muted-foreground">
+              <Trophy className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+              <p className="text-sm sm:text-base">No active events in this book at the moment.</p>
             </div>
           ) : (
             eventsWithUserStake.map((event, index) => (
               <div key={event.id} className="space-y-4">
                 {index > 0 && <Separator />}
                 
-                <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{event.name}</h3>
-                        {(event.isFirstFastOption || event.isSecondFastOption) && (
-                          <Badge variant="outline" className="bg-yellow-50">
-                            {event.isFirstFastOption ? '1st Fast Bet' : '2nd Fast Bet'}
-                          </Badge>
-                        )}
+                <div className="space-y-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-col xs:flex-row xs:items-center gap-2">
+                        <h3 className="font-semibold text-base sm:text-lg break-words text-center lg:text-left">{event.name}</h3>
                       </div>
                       {event.description && (
-                        <p className="text-muted-foreground">{event.description}</p>
+                        <p className="text-muted-foreground text-sm sm:text-base">{event.description}</p>
                       )}
                     </div>
                   </div>
                   
                   {event.homeTeam && event.awayTeam && (
-                    <div className="flex items-center justify-center gap-6 py-4">
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 py-3 sm:py-4">
                       <div className="flex flex-col items-center gap-2">
                         {event.homeTeam.image && (
                           <img 
                             src={event.homeTeam.image} 
                             alt={event.homeTeam.name}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-muted"
+                            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-muted"
                           />
                         )}
-                        <span className="font-medium text-center">{event.homeTeam.name}</span>
+                        <span className="font-medium text-center text-xs sm:text-sm max-w-[80px] sm:max-w-[100px] break-words">
+                          {event.homeTeam.name}
+                        </span>
                       </div>
-                      <span className="text-xl font-bold text-muted-foreground">vs</span>
+                      <span className="text-lg sm:text-xl font-bold text-muted-foreground">vs</span>
                       <div className="flex flex-col items-center gap-2">
                         {event.awayTeam.image && (
                           <img 
                             src={event.awayTeam.image} 
                             alt={event.awayTeam.name}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-muted"
+                            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-muted"
                           />
                         )}
-                        <span className="font-medium text-center">{event.awayTeam.name}</span>
+                        <span className="font-medium text-center text-xs sm:text-sm max-w-[80px] sm:max-w-[100px] break-words">
+                          {event.awayTeam.name}
+                        </span>
                       </div>
                     </div>
                   )}
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className={getOutcomeGridClass(event.outcomes.length)}>
                     {event.outcomes.map((outcome) => (
                       <Button
                         key={outcome.id}
                         variant="outline"
-                        className={`h-auto py-6 px-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
+                        className={`h-auto py-4 sm:py-6 px-3 sm:px-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
                           book.isUpcoming 
                             ? 'hover:bg-primary/5 hover:border-primary/20 cursor-pointer' 
                             : 'cursor-not-allowed opacity-60'
-                        }`}
+                        } ${event.outcomes.length <= 4 ? 'lg:flex-1' : ''}`}
                         onClick={() => book.isUpcoming && handleOutcomeClick(outcome, event)}
                         disabled={!book.isUpcoming}
                       >
-                        <div className={`font-semibold text-base text-center ${
+                        <div className={`font-semibold text-sm sm:text-base text-center break-words ${
                           book.isUpcoming ? 'text-foreground group-hover:text-primary' : 'text-muted-foreground'
                         }`}>
                           {outcome.name}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-2xl font-bold px-3 py-1 rounded-md ${
+                          <span className={`text-xl sm:text-2xl font-bold px-2 sm:px-3 py-1 rounded-md ${
                             book.isUpcoming ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-muted'
                           }`}>
                             {outcome.odds.toFixed(2)}
@@ -164,7 +169,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
                     ))}
                   </div>
                   {!book.isUpcoming && (
-                    <div className="text-center text-sm text-muted-foreground italic">
+                    <div className="text-center text-xs sm:text-sm text-muted-foreground italic">
                       {book.isLive ? 'Event is LIVE - Bets are closed' : 'Bets are no longer accepted for this event'}
                     </div>
                   )}

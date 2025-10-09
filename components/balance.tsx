@@ -7,7 +7,7 @@ const Balance = () => {
   const { formattedBalance, isLoading } = useBalanceContext();
 
   if (isLoading) {
-    return <Skeleton className="h-6 w-32" />;
+    return <Skeleton className="h-6 w-20" />;
   }
 
   return (

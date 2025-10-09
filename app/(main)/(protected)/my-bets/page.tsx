@@ -21,7 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, X, Calendar, BookOpen, ArrowRight, IndianRupee } from 'lucide-react'
+import { TrendingUp, TrendingDown, X, ArrowRight, IndianRupee } from 'lucide-react'
 import { formatter } from '@/lib/utils'
 import Link from 'next/link'
 import { useBalanceContext } from '@/contexts/balance-context'

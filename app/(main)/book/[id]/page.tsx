@@ -135,7 +135,7 @@ export default async function BookPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6 px-4 sm:px-6">
+    <div className="container mx-auto py-6 space-y-3 lg:space-y-6 px-4 sm:px-6 pb-[70px] lg:pb-0">
       <Suspense fallback={<BookHeaderSkeleton />}>
         <BookHeader book={book} />
       </Suspense>

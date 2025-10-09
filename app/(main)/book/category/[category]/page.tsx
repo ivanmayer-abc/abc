@@ -1,5 +1,10 @@
-import ClientBookmakingDashboard from "@/components/bookmaking/bookmaking-dashboard"
+import BookmakingDashboard from "../../page"
 
-export default function CategoryPage() {
-  return <ClientBookmakingDashboard />
+interface CategoryPageProps {
+  params: { category: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default function CategoryPage({ params, searchParams }: CategoryPageProps) {
+  return <BookmakingDashboard params={params} searchParams={searchParams} />
 }

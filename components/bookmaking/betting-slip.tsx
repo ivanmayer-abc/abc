@@ -213,7 +213,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-black">
+      <DialogContent className="sm:max-w-md bg-black max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Place bet
@@ -318,7 +318,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-4">
             <Button
               type="button"
               variant="outline"

@@ -10,7 +10,7 @@ import Link from "next/link"
 
 const Banners = () => {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center mt-6 lg:mt-0">
         <Carousel
             className="w-full"
             opts={{

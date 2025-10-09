@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DollarSign, TrendingUp, TrendingDown, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, X, IndianRupee } from 'lucide-react'
 import { formatter } from '@/lib/utils'
 import { useBalanceContext } from '@/contexts/balance-context'
 import { toast } from 'sonner'
@@ -25,7 +25,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 
-// Use the same interface as in page.tsx
 interface UserBet {
   id: string
   amount: number
@@ -58,7 +57,6 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
   const [bookData, setBookData] = useState<{ date: Date } | null>(null)
   const { refreshBalance } = useBalanceContext()
 
-  // Fetch book data to check if it's still accepting bets
   useEffect(() => {
     const fetchBookData = async () => {
       try {
@@ -86,7 +84,6 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
         
         if (response.ok) {
           await refreshBalance()
-          // Remove the cancelled bet from the list
           setBets(prev => prev.filter(bet => bet.id !== betId))
           resolve('Bet cancelled successfully')
         } else {
@@ -112,28 +109,23 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
     })
   }
 
-  // Check if bet can be cancelled (book hasn't started yet)
   const isBetCancellable = (bet: UserBet) => {
     if (bet.status !== 'PENDING') return false
     
-    // If we have book data, check if the book date hasn't passed
     if (bookData) {
       const now = new Date()
       const bookDate = new Date(bookData.date)
       return now < bookDate
     }
     
-    // If no book data, use a fallback - allow cancellation for bets placed recently
     const now = new Date()
     const betDate = new Date(bet.createdAt)
     const timeDiff = now.getTime() - betDate.getTime()
     const minutesDiff = timeDiff / (1000 * 60)
     
-    // Allow cancellation for bets placed within the last 30 minutes as fallback
     return minutesDiff < 30
   }
 
-  // Calculate pagination
   const totalPages = Math.ceil(bets.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
@@ -165,45 +157,10 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
           View your betting history and manage active bets
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Bet Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold">{betStats.totalBets}</div>
-              <div className="text-sm text-muted-foreground">Total Bets</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold">{formatter.format(betStats.totalStaked)}</div>
-              <div className="text-sm text-muted-foreground">Total Staked</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{formatter.format(betStats.totalPotentialWin)}</div>
-              <div className="text-sm text-muted-foreground">Potential Win</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{formatter.format(betStats.totalWon)}</div>
-              <div className="text-sm text-muted-foreground">Total Won</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">{formatter.format(betStats.totalLost)}</div>
-              <div className="text-sm text-muted-foreground">Total Lost</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bets Table */}
+      <CardContent className='p-2 sm:p-6 -mt-5 sm:mt-0'>
         {bets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>You haven&apos;t placed any bets on this book yet.</p>
           </div>
         ) : (
@@ -213,7 +170,7 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Event</TableHead>
+                      <TableHead className="whitespace-nowrap pl-4">Event</TableHead>
                       <TableHead className="whitespace-nowrap">Outcome</TableHead>
                       <TableHead className="whitespace-nowrap">Stake</TableHead>
                       <TableHead className="whitespace-nowrap">Odds</TableHead>
@@ -226,7 +183,7 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                   <TableBody>
                     {currentBets.map((bet) => (
                       <TableRow key={bet.id}>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap pl-4">
                           <div className="font-medium">{bet.event.name}</div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">
@@ -252,14 +209,18 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                             {bet.status.toLowerCase()}
                           </Badge>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
-                          <div className="text-sm text-muted-foreground">
-                            {new Date(bet.createdAt).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(bet.createdAt).toLocaleTimeString()}
-                          </div>
-                        </TableCell>
+                        <TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(bet.createdAt).toLocaleString('en-IN', {
+                                timeZone: 'Asia/Kolkata',
+                                month: 'long',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                              })}
+                            </div>
+                          </TableCell>
                         <TableCell className="text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             {isBetCancellable(bet) && (
@@ -298,7 +259,6 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
               </div>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination>
                 <PaginationContent>

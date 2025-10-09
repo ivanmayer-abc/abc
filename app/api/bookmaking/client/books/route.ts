@@ -45,13 +45,12 @@ export async function GET(request: Request) {
       
       const isLive = book.status === 'ACTIVE' && now >= bookDate
       const isUpcoming = book.status === 'ACTIVE' && now < bookDate
-      const isAcceptingBets = now < bookDate
       
       return {
         ...book,
         isLive,
         isUpcoming,
-        isAcceptingBets,
+        isAcceptingBets: now < bookDate,
         displayStatus: book.status === 'ACTIVE' 
           ? (now >= bookDate ? 'LIVE' : 'UPCOMING')
           : book.status
@@ -60,7 +59,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(booksWithBetInfo)
   } catch (error) {
-    console.log('[CLIENT_BOOKS_GET]', error)
     return new NextResponse("Internal error", { status: 500 })
   }
 }
