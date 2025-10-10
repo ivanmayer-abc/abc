@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { BalanceProvider } from '@/contexts/balance-context'
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -34,6 +35,7 @@ export default async function RootLayout({
             <BalanceProvider>
               <Toaster />
               {children}
+              <Analytics />
             </BalanceProvider>
           </ThemeProvider>
         </body>
