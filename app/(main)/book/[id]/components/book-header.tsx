@@ -15,6 +15,9 @@ export default function BookHeader({ book }: BookHeaderProps) {
   const acceptingBets = book.isUpcoming
   const hasTeams = book.teams && book.teams.length > 0
 
+  const bookStatus = book.displayStatus || (book.isLive ? 'LIVE' : 'UPCOMING')
+  const capitalizedStatus = bookStatus.charAt(0).toUpperCase() + bookStatus.slice(1).toLowerCase()
+
   return (
     <>
       <div className="flex items-center gap-4 sm:mb-4">
@@ -40,7 +43,7 @@ export default function BookHeader({ book }: BookHeaderProps) {
                 book.isLive ? 'default' : 
                 book.isUpcoming ? 'secondary' : 'outline'
               } className="text-xs sm:text-sm">
-                {book.isLive ? 'LIVE' : book.displayStatus?.toLowerCase()}
+                {book.isLive ? 'LIVE' : capitalizedStatus}
               </Badge>
               {!acceptingBets && (
                 <Badge variant="outline" className="text-xs sm:text-sm bg-destructive/20 text-destructive">
