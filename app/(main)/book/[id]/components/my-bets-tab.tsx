@@ -174,7 +174,7 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                       <TableHead className="whitespace-nowrap">Outcome</TableHead>
                       <TableHead className="whitespace-nowrap">Stake</TableHead>
                       <TableHead className="whitespace-nowrap">Odds</TableHead>
-                      <TableHead className="whitespace-nowrap">Potential Win</TableHead>
+                      <TableHead className="whitespace-nowrap">Potential</TableHead>
                       <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap">Date</TableHead>
                       <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
@@ -213,7 +213,7 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                             <div className="text-sm text-muted-foreground">
                               {new Date(bet.createdAt).toLocaleString('en-IN', {
                                 timeZone: 'Asia/Kolkata',
-                                month: 'long',
+                                month: 'short',
                                 day: '2-digit',
                                 hour: '2-digit',
                                 minute: '2-digit',

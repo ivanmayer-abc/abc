@@ -122,7 +122,7 @@ const SupportClient = ({ initialConversations, currentUserId, isChatBlocked }: S
 
     return (
         <>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 px-2">
                 <div className="flex items-center gap-2">
                     <Dialog>
                         {isChatBlocked ? (
@@ -156,6 +156,7 @@ const SupportClient = ({ initialConversations, currentUserId, isChatBlocked }: S
                                             <SelectItem className="cursor-pointer hover:bg-gray-900 transition duration-300 ease-in-out" value="Deposit not processed">Deposit not processed</SelectItem>
                                             <SelectItem className="cursor-pointer hover:bg-gray-900 transition duration-300 ease-in-out" value="Withdrawal not processed">Withdrawal not processed</SelectItem>
                                             <SelectItem className="cursor-pointer hover:bg-gray-900 transition duration-300 ease-in-out" value="Technical issue">Technical issue</SelectItem>
+                                            <SelectItem className="cursor-pointer hover:bg-gray-900 transition duration-300 ease-in-out" value="I have an offer">I have an offer</SelectItem>
                                             <SelectItem className="cursor-pointer hover:bg-gray-900 transition duration-300 ease-in-out" value="Other">Other</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -254,7 +255,7 @@ const ConversationsListWithUnread = ({
   }, [onRefresh]);
 
   if (refreshing) {
-    return <div className="text-gray-600 flex items-center gap-2"><RefreshCw className="h-4 w-4 animate-spin" /> Refreshing conversations...</div>;
+    return <div className="text-gray-600 flex items-center gap-2 px-4"><RefreshCw className="h-4 w-4 animate-spin" /> Refreshing conversations...</div>;
   }
 
   if (!conversations || conversations.length === 0) {
@@ -262,7 +263,7 @@ const ConversationsListWithUnread = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 px-2 pb-[60px] lg:pb-0">
       {conversations.map((conversation) => {
         const unreadCount = getUnreadMessagesCount(conversation.messages || []);
         const hasUnread = hasUnreadMessages(conversation.messages || []);

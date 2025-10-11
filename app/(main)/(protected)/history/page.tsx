@@ -6,6 +6,7 @@ const SlotTransactionsPage = async () => {
   const user = await currentUser();
   const userImage = user?.image;
   const userId = user?.id;
+  const isBlocked = user?.isBlocked ?? false;
   
   if (!user) {
     return <div>login to continue</div>
@@ -14,7 +15,7 @@ const SlotTransactionsPage = async () => {
   if (user?.isImageApproved === "success") {
     return (
       <div className="flex flex-col">
-        <SlotsList />
+        <SlotsList isBlocked={isBlocked} />
       </div>
     );
   }

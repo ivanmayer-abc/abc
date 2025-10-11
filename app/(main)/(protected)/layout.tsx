@@ -119,7 +119,7 @@ const ProtectedLayout = ({ children }: ProtectedLayoutProps) => {
                 )}
 
                 <div
-                    className={`transition-all duration-300 p-4 w-full ${
+                    className={`transition-all duration-300 sm:px-4 py-4 w-full ${
                         isMenuVisible ? "lg:ml-[200px]" : "ml-0"
                     }`}
                 >

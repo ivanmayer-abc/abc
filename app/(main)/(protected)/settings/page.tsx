@@ -152,7 +152,7 @@ const SettingsPage = () => {
     }
 
     return (
-        <div className="p-4">
+        <div className="p-4 pb-[60px] sm:pb-0">
             <Form {...form}>
                 <form
                     className="space-y-6"
@@ -299,6 +299,7 @@ const SettingsPage = () => {
                     <Button
                         disabled={isPending}
                         type="submit"
+                        size="lg"
                     >
                         Save
                     </Button>

@@ -5,18 +5,19 @@ import { formatter } from '@/lib/utils';
 import { SlotTransactionColumn } from './columns';
 import { Transactions } from './transactions';
 
-const SlotsList = async () => {
+interface HistoryListProps {
+  isBlocked: boolean;
+}
+
+const SlotsList = async ({ isBlocked }: HistoryListProps) => {
   const timeZone = 'Asia/Kolkata';
 
   const transactions = await db.transaction.findMany({
     where: {
-      OR: [
-        { description: { contains: 'slot' } },
-        { description: { contains: 'spin' } },
-        { description: { contains: 'win' } },
-        { category: 'slots' }
-      ]
-    },
+    NOT: [
+      { category: "transaction" }
+    ]
+  },
     orderBy: {
       createdAt: 'desc',
     },
@@ -27,14 +28,18 @@ const SlotsList = async () => {
     return {
       id: item.id,
       amount: `${item.type === 'deposit' ? '+' : '-'} ${formatter.format(Number(item.amount))}`,
-      createdAt: format(zonedTime, 'MMMM do yyyy HH:mm'),
+      status: item.status,
+      createdAt: format(zonedTime, 'dd MMM yyyy HH:mm'),
       description: item.description || '',
     };
   });
 
-  return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <Transactions data={formattedTransactions} />
+return (
+    <div className="sm:container px-1 m:py-6 space-y-6 pb-[60px] lg:pb-0">
+      <Transactions 
+        data={formattedTransactions} 
+        isBlocked={isBlocked}
+      />
     </div>
   );
 };

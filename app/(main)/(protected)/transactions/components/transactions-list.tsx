@@ -12,34 +12,62 @@ interface TransactionsListProps {
 const TransactionsList = async ({ isBlocked }: TransactionsListProps) => {
   const timeZone = 'Asia/Kolkata';
 
-  const transactions = await db.transaction.findMany({
-    where: {
-      OR: [
-        { description: { contains: 'deposit' } },
-        { description: { contains: 'withdrawal' } },
-        { category: 'transaction' }
-      ]
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+  try {
+    const [transactions] = await Promise.all([
+      db.transaction.findMany({
+        where: {
+          OR: [
+            { description: { contains: 'deposit' } },
+            { description: { contains: 'withdrawal' } },
+            { category: 'transaction' }
+          ]
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          amount: true,
+          type: true,
+          status: true,
+          createdAt: true,
+          description: true,
+          category: true
+        }
+      }),
+    ]);
 
-  const formattedTransactions: TransactionColumn[] = transactions.map((item) => {
-    const zonedTime = toZonedTime(item.createdAt, timeZone);
-    return {
-      id: item.id,
-      amount: `${item.type === 'deposit' ? '+' : '-'} ${formatter.format(Number(item.amount))}`,
-      status: item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
-      createdAt: format(zonedTime, 'MMMM do yyyy HH:mm'),
-    };
-  });
+    const formattedTransactions: TransactionColumn[] = transactions.map((item) => {
+      const zonedTime = toZonedTime(item.createdAt, timeZone);
+      const amount = item.amount.toNumber ? item.amount.toNumber() : Number(item.amount);
+      
+      return {
+        id: item.id,
+        amount: `${item.type === 'deposit' ? '+' : '-'} ${formatter.format(amount)}`,
+        status: item.status,
+        type: item.type,
+        createdAt: format(zonedTime, 'dd MMM yyyy HH:mm'),
+        rawAmount: amount,
+      };
+    });
 
-  return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <Transactions data={formattedTransactions} isBlocked={isBlocked} />
-    </div>
-  );
+    return (
+      <div className="sm:container px-1 mx-auto space-y-6 pb-[60px] lg:pb-0">
+        <Transactions 
+          data={formattedTransactions} 
+          isBlocked={isBlocked}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error('Error loading transactions:', error);
+    return (
+      <div className="container mx-auto py-6">
+        <div className="text-center text-red-600">
+          Failed to load transactions. Please try again later.
+        </div>
+      </div>
+    );
+  }
 };
 
 export default TransactionsList;

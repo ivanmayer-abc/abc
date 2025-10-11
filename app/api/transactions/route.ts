@@ -7,29 +7,78 @@ export async function GET(req: Request) {
     const user = await currentUser();
     if (!user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const allTransactions = await db.transaction.findMany({
-      where: { userId: user.id }
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+
+    const [transactions, totalCount] = await Promise.all([
+      db.transaction.findMany({
+        where: { 
+          userId: user.id,
+          OR: [
+            { description: { contains: 'deposit' } },
+            { description: { contains: 'withdrawal' } },
+            { category: 'transaction' }
+          ]
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          amount: true,
+          type: true,
+          status: true,
+          createdAt: true,
+          description: true,
+          category: true
+        }
+      }),
+      db.transaction.count({
+        where: { 
+          userId: user.id,
+          OR: [
+            { description: { contains: 'deposit' } },
+            { description: { contains: 'withdrawal' } },
+            { category: 'transaction' }
+          ]
+        }
+      })
+    ]);
+
+    const balanceAggregates = await db.transaction.groupBy({
+      by: ['status', 'type'],
+      where: { userId: user.id },
+      _sum: { amount: true },
+      _count: { id: true }
     });
 
-    const successTransactions = allTransactions.filter(t => t.status === 'success');
-    const pendingTransactions = allTransactions.filter(t => t.status === 'pending');
+    let availableBalance = 0;
+    let netPending = 0;
 
-    const availableBalance = successTransactions.reduce((sum, item) => {
-      const amount = item.amount.toNumber ? item.amount.toNumber() : Number(item.amount);
-      return item.type === 'deposit' ? sum + amount : sum - amount;
-    }, 0);
-
-    const netPending = pendingTransactions.reduce((sum, item) => {
-      const amount = item.amount.toNumber ? item.amount.toNumber() : Number(item.amount);
-      return item.type === 'deposit' ? sum + amount : sum - amount;
-    }, 0);
+    balanceAggregates.forEach(agg => {
+      const amount = agg._sum.amount?.toNumber() || 0;
+      
+      if (agg.status === 'success') {
+        availableBalance += agg.type === 'deposit' ? amount : -amount;
+      } else if (agg.status === 'pending') {
+        netPending += agg.type === 'deposit' ? amount : -amount;
+      }
+    });
 
     return NextResponse.json({ 
-      transactions: allTransactions,
+      transactions,
       balance: {
         available: availableBalance,
         netPending, 
         effective: availableBalance
+      },
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
       }
     });
   } catch (error) {

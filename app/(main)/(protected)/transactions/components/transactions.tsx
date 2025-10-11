@@ -2,10 +2,12 @@
 
 import { MinusIcon, PlusIcon } from "@radix-ui/react-icons"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { useRouter } from "next/navigation"
 import { TransactionColumn, columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
 interface TransactionsProps {
   data: TransactionColumn[];
@@ -22,25 +24,46 @@ export const Transactions = ({ data, isBlocked }: TransactionsProps) => {
   }
 
   return (
-    <>
-      <div className="flex sm:items-center justify-between sm:flex-row flex-col items-start gap-5">
-        <Button 
-          onClick={() => handleClick('/transactions/new/deposit')}
-          disabled={isBlocked}
-        >
-          <PlusIcon className="mr-2 h-4 w-4" />
-          To Deposit
-        </Button>
-        <Button 
-          onClick={() => handleClick('/transactions/new/withdrawal')}
-          disabled={isBlocked}
-        >
-          <MinusIcon className="mr-2 h-4 w-4" />
-          To Withdraw
-        </Button>
-      </div>
-      <Separator />
-      <DataTable columns={columns} data={data} />
-    </>
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <CardTitle>Transaction history</CardTitle>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => handleClick('/transactions/new/deposit')}
+              disabled={isBlocked}
+              className="flex items-center gap-2"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Deposit
+            </Button>
+            <Button 
+              onClick={() => handleClick('/transactions/new/withdrawal')}
+              disabled={isBlocked}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <MinusIcon className="h-4 w-4" />
+              Withdraw
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-1 sm:p-6">
+        {isBlocked && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Your account is temporarily blocked. Please contact support for assistance.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <DataTable
+          columns={columns} 
+          data={data}
+        />
+      </CardContent>
+    </Card>
   )
 }

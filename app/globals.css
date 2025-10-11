@@ -151,7 +151,6 @@ input[type=number] {
   }
 }
 
-/* Explosion animation */
 @keyframes explode {
   0% {
     opacity: 1;
@@ -174,30 +173,25 @@ input[type=number] {
   animation: explode 0.8s ease-out forwards;
 }
 
-/* Smooth transitions for all elements */
 .smooth-transition {
   transition: all 0.3s ease-in-out;
 }
 
-/* Performance optimizations */
 * {
   box-sizing: border-box;
 }
 
-/* Prevent layout shifts */
 img, video, canvas {
   max-width: 100%;
   height: auto;
 }
 
-/* Optimize animation performance */
 .optimize-performance {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
 }
 
-/* Loading animation */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -211,7 +205,6 @@ img, video, canvas {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Rocket animation styles */
 .rocket-movement {
   transition: left 0.1s linear, top 0.1s linear, transform 0.1s linear, font-size 0.1s linear;
 }
@@ -220,7 +213,6 @@ img, video, canvas {
   transition: left 0.1s linear, top 0.1s linear, transform 0.1s linear, font-size 0.1s linear;
 }
 
-/* Rocket animation styles */
 .rocket-movement {
   transition: left 0.1s ease-out, top 0.1s ease-out, transform 0.1s ease-out, font-size 0.1s ease-out;
   backface-visibility: hidden;
@@ -233,10 +225,24 @@ img, video, canvas {
   transform: translateZ(0);
 }
 
-/* Optimize animation performance */
 .optimize-performance {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
   will-change: transform;
+}
+
+input, 
+textarea, 
+select, 
+button {
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
 }

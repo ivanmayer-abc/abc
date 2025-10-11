@@ -157,20 +157,8 @@ export default function MyBetsPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 w-full justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">My bets</h1>
-          <Link href="/book">
-            <Button variant="outline" size="sm">
-              Go to events
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+    <div className="sm:container px-1 mx-auto sm:space-y-6 space-y-3 pb-[60px] lg:pb-0">
+      <div className="hidden md:grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{betStats.totalBets}</div>
@@ -191,7 +179,7 @@ export default function MyBetsPage() {
         </Card>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 px-4">
         <Button
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
@@ -235,7 +223,7 @@ export default function MyBetsPage() {
             Showing {currentBets.length} of {filteredBets.length} {filteredBets.length === 1 ? 'bet' : 'bets'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className='p-1 sm:p-6'>
           {filteredBets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -251,7 +239,7 @@ export default function MyBetsPage() {
                       <TableHead>Outcome</TableHead>
                       <TableHead>Stake</TableHead>
                       <TableHead>Odds</TableHead>
-                      <TableHead>Potential Win</TableHead>
+                      <TableHead>Potential</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-center">Actions</TableHead>
@@ -297,13 +285,13 @@ export default function MyBetsPage() {
                             <div className="font-medium">{bet.outcome.name}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium">{formatter.format(bet.amount)}</div>
+                            <div className="font-medium min-w-[70px]">{formatter.format(bet.amount)}</div>
                           </TableCell>
                           <TableCell>
                             <div className="font-medium">{bet.odds.toFixed(2)}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium text-blue-600">
+                            <div className="font-medium text-blue-600 min-w-[70px]">
                               {formatter.format(bet.potentialWin)}
                             </div>
                           </TableCell>
@@ -317,11 +305,11 @@ export default function MyBetsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-sm text-muted-foreground min-w-[45px]">
                               {new Date(bet.book.date).toLocaleString('en-IN', {
                                 timeZone: 'Asia/Kolkata',
                                 year: 'numeric',
-                                month: 'long',
+                                month: 'short',
                                 day: '2-digit',
                               })}
                             </div>

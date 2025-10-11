@@ -1,4 +1,3 @@
-// src/app/api/bookmaking/client/my-bets/route.ts
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
