@@ -46,7 +46,7 @@ const TransactionsPage = async () => {
           </CardHeader>
           <CardContent className="text-center">
             <p className="text-muted-foreground mb-6">
-              It may take from a few minutes up to 24 hours for approval. You'll be notified once your verification is complete.
+              It may take from a few minutes up to 24 hours for approval. You&apos;ll be notified once your verification is complete.
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-yellow-600">
               <Clock className="h-4 w-4" />
