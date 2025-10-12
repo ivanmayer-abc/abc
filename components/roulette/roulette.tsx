@@ -1,4 +1,3 @@
-// components/CompactRouletteTable.tsx
 'use client';
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
@@ -9,26 +8,21 @@ const useSound = () => {
   const buttonSoundRef = useRef<HTMLAudioElement | null>(null);
   const chipSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Инициализация аудио элементов с вашими звуками
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Фоновая музыка
       backgroundMusicRef.current = new Audio();
       backgroundMusicRef.current.src = '/bgr2.mp3';
       backgroundMusicRef.current.loop = true;
       backgroundMusicRef.current.volume = 0.3;
 
-      // Звук вращения рулетки
       spinSoundRef.current = new Audio();
       spinSoundRef.current.src = '/spinw1.mp3';
       spinSoundRef.current.volume = 0.6;
 
-      // Звук нажатия кнопок - увеличенная громкость
       buttonSoundRef.current = new Audio();
       buttonSoundRef.current.src = '/bs2.mp3';
-      buttonSoundRef.current.volume = 0.8; // Увеличено с 0.4 до 0.8
+      buttonSoundRef.current.volume = 0.8;
 
-      // Звук размещения фишки
       chipSoundRef.current = new Audio();
       chipSoundRef.current.src = '/fishkisound.mp3';
       chipSoundRef.current.volume = 0.5;
@@ -172,7 +166,7 @@ const CompactRouletteTable = () => {
     showVolumeSlider: false,
     winAmount: null,
     showWinMessage: false,
-    masterVolume: 0.8, // Начальная громкость
+    masterVolume: 0.8,
   });
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -184,7 +178,6 @@ const CompactRouletteTable = () => {
 
   const chipValues = [100, 500, 1000, 2500, 5000];
 
-  // European roulette numbers layout
   const numbersLayout = [
     [1, 2, 3],
     [4, 5, 6],
@@ -200,7 +193,7 @@ const CompactRouletteTable = () => {
     [34, 35, 36]
   ];
 
-  // European roulette numbers in order with correct colors
+  // Правильное расположение чисел на европейской рулетке
   const rouletteNumbers = useMemo(() => [
     { number: 0, color: 'green' },
     { number: 32, color: 'red' }, { number: 15, color: 'black' }, { number: 19, color: 'red' },
@@ -217,16 +210,14 @@ const CompactRouletteTable = () => {
     { number: 35, color: 'black' }, { number: 3, color: 'red' }, { number: 26, color: 'black' }
   ], []);
 
-  // Обновление громкости всех звуков при изменении masterVolume
   useEffect(() => {
     const volume = gameState.masterVolume;
     setButtonSoundVolume(volume);
-    setChipSoundVolume(volume * 0.625); // 0.5 от 0.8
-    setSpinSoundVolume(volume * 0.75); // 0.6 от 0.8
-    setBackgroundMusicVolume(volume * 0.375); // 0.3 от 0.8
+    setChipSoundVolume(volume * 0.625);
+    setSpinSoundVolume(volume * 0.75);
+    setBackgroundMusicVolume(volume * 0.375);
   }, [gameState.masterVolume, setButtonSoundVolume, setChipSoundVolume, setSpinSoundVolume, setBackgroundMusicVolume]);
 
-  // Закрытие ползунка громкости при клике вне его
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (volumeSliderRef.current && !volumeSliderRef.current.contains(event.target as Node)) {
@@ -240,7 +231,6 @@ const CompactRouletteTable = () => {
     };
   }, []);
 
-  // Очистка таймеров при размонтировании
   useEffect(() => {
     return () => {
       if (winMessageTimeoutRef.current) {
@@ -252,7 +242,6 @@ const CompactRouletteTable = () => {
     };
   }, []);
 
-  // Запуск фоновой музыки при первом взаимодействии
   useEffect(() => {
     const handleFirstInteraction = () => {
       if (!hasInteracted.current && gameState.soundEnabled) {
@@ -292,7 +281,6 @@ const CompactRouletteTable = () => {
       betValue
     };
 
-    // Воспроизводим звук в зависимости от типа кнопки
     if (gameState.soundEnabled) {
       if (useButtonSound) {
         playButtonSound();
@@ -312,7 +300,6 @@ const CompactRouletteTable = () => {
   const clearBets = useCallback(() => {
     const totalBetAmount = gameState.chips.reduce((sum, chip) => sum + chip.value, 0);
     
-    // Воспроизводим звук кнопки
     if (gameState.soundEnabled && totalBetAmount > 0) {
       playButtonSound();
     }
@@ -358,7 +345,6 @@ const CompactRouletteTable = () => {
   const spinWheel = useCallback(async () => {
     if (gameState.chips.length === 0 || gameState.isSpinning) return;
 
-    // Воспроизводим звук кнопки
     if (gameState.soundEnabled) {
       playButtonSound();
     }
@@ -368,7 +354,6 @@ const CompactRouletteTable = () => {
 
     await new Promise(resolve => setTimeout(resolve, 400));
 
-    // Воспроизводим звук вращения
     if (gameState.soundEnabled) {
       playSpinSound();
     }
@@ -412,7 +397,6 @@ const CompactRouletteTable = () => {
       if (winAmount > 0) {
         setGameState(prev => ({ ...prev, showWinMessage: true }));
         
-        // Автоматически скрываем сообщение о победе через 5 секунд
         winMessageTimeoutRef.current = setTimeout(() => {
           setGameState(prev => ({ ...prev, showWinMessage: false }));
         }, 5000);
@@ -429,7 +413,6 @@ const CompactRouletteTable = () => {
   const toggleSound = useCallback(() => {
     const newSoundState = !gameState.soundEnabled;
     
-    // Воспроизводим звук кнопки при переключении звука
     if (gameState.soundEnabled) {
       playButtonSound();
     }
@@ -465,7 +448,6 @@ const CompactRouletteTable = () => {
   }, []);
 
   const handleChipSelect = useCallback((value: number) => {
-    // Воспроизводим звук фишки при выборе фишки
     if (gameState.soundEnabled) {
       playChipSound();
     }
@@ -502,7 +484,6 @@ const CompactRouletteTable = () => {
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-3 overflow-hidden relative">
       
-      {/* Сообщение о победе */}
       {gameState.showWinMessage && gameState.winAmount && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/70"></div>
@@ -524,20 +505,20 @@ const CompactRouletteTable = () => {
         </div>
       )}
 
-      {/* Roulette Wheel Overlay */}
       {gameState.showWheel && (
         <div className="fixed inset-0 z-40 flex items-center justify-center">
-          <div className="absolute inset-0"></div>
+          <div className="absolute inset-0 bg-black/80"></div>
           
           <div className={`relative z-10 transition-all duration-300 ease-out ${getWheelAnimationClass()}`}>
             <div 
               ref={wheelRef}
-              className="w-96 h-96 rounded-full border-8 border-amber-500 bg-emerald-800 relative overflow-visible transition-transform duration-4000 shadow-2xl"
+              className="w-[80vh] h-[80vh] max-w-[90vw] max-h-[90vw] rounded-full border-8 border-amber-500 bg-emerald-800 relative overflow-visible transition-transform duration-4000 shadow-2xl"
               style={{ 
                 transform: 'rotate(0deg)',
                 transitionTimingFunction: 'cubic-bezier(0.1, 0.3, 0.2, 0.9)'
               }}
             >
+              {/* Основные сектора */}
               <div className="absolute inset-0 rounded-full overflow-hidden">
                 {rouletteNumbers.map((item, index) => {
                   const angle = (360 / rouletteNumbers.length) * index;
@@ -561,21 +542,38 @@ const CompactRouletteTable = () => {
                 })}
               </div>
 
+              {/* Тонкие разделительные линии */}
+              <div className="absolute inset-0">
+                {rouletteNumbers.map((_, index) => {
+                  const angle = (360 / rouletteNumbers.length) * index;
+                  return (
+                    <div
+                      key={index}
+                      className="absolute top-0 left-1/2 w-0.5 h-1/2 origin-bottom bg-white/80"
+                      style={{
+                        transform: `translateX(-50%) rotate(${angle}deg)`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Цифры - правильное расположение */}
               <div className="absolute inset-0">
                 {rouletteNumbers.map((item, index) => {
                   const angle = (360 / rouletteNumbers.length) * index;
-                  const radius = 140;
-                  const x = 192 + radius * Math.cos((angle - 90) * Math.PI / 180);
-                  const y = 192 + radius * Math.sin((angle - 90) * Math.PI / 180);
+                  const radius = 35; // Радиус для расположения цифр
+                  const x = 50 + radius * Math.cos((angle - 90) * Math.PI / 180);
+                  const y = 50 + radius * Math.sin((angle - 90) * Math.PI / 180);
                   
                   return (
                     <div
                       key={index}
-                      className="absolute text-white font-bold text-lg flex items-center justify-center w-8 h-8 z-10"
+                      className="absolute text-white font-bold text-sm flex items-center justify-center w-8 h-8 z-10"
                       style={{
-                        left: `${x - 16}px`,
-                        top: `${y - 16}px`,
-                        transform: `rotate(${angle}deg)`,
+                        left: `${x - 4}%`,
+                        top: `${y - 4}%`,
+                        transform: `rotate(${angle + 90}deg)`,
                         textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
                       }}
                     >
@@ -585,23 +583,31 @@ const CompactRouletteTable = () => {
                 })}
               </div>
               
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-amber-500 rounded-full border-4 border-amber-300 z-20 shadow-inner"></div>
+              {/* Центральный круг с градиентом */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full border-4 border-amber-300 z-20 shadow-inner"></div>
 
+              {/* Внешние декоративные кольца */}
               <div className="absolute inset-0 rounded-full border-4 border-amber-400 pointer-events-none"></div>
+              <div className="absolute inset-2 rounded-full border-2 border-white/30 pointer-events-none"></div>
+              <div className="absolute inset-4 rounded-full border-1 border-white/20 pointer-events-none"></div>
+              
+              {/* Металлический обод */}
+              <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-yellow-200 to-yellow-600 opacity-20 pointer-events-none"></div>
             </div>
             
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-6 h-16 bg-gradient-to-b from-red-600 to-red-700 clip-triangle z-30 shadow-2xl"></div>
+            {/* Стильный указатель */}
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 w-6 h-16 bg-gradient-to-b from-red-600 to-red-800 clip-triangle z-30 shadow-2xl border-b-2 border-red-900"></div>
 
             {gameState.winningNumber !== null && gameState.wheelAnimation === 'exiting' && (
-              <div className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-lg text-xl font-bold animate-pulse">
-                Winning Number: {gameState.winningNumber}
+              <div className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-6 py-3 rounded-lg text-xl font-bold animate-pulse border-2 border-amber-500">
+                Winning Number: <span className="text-amber-400">{gameState.winningNumber}</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Header */}
+      {/* Остальной код остается без изменений */}
       <div className="flex justify-between items-center mb-3 relative z-10">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center font-bold text-gray-900 text-lg">
@@ -614,7 +620,6 @@ const CompactRouletteTable = () => {
         </div>
         
         <div className="flex items-center space-x-4 relative">
-          {/* Ползунок громкости */}
           <div 
             ref={volumeSliderRef}
             className="relative flex items-center"
@@ -622,7 +627,6 @@ const CompactRouletteTable = () => {
             onMouseLeave={handleVolumeLeave}
           >
             <div className="flex items-center space-x-2">
-              {/* Ползунок громкости */}
               <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                 gameState.showVolumeSlider ? 'w-24 opacity-100' : 'w-0 opacity-0'
               }`}>
@@ -643,7 +647,6 @@ const CompactRouletteTable = () => {
                 </div>
               </div>
               
-              {/* Кнопка звука */}
               <button
                 onClick={toggleSound}
                 className={`p-2 rounded-lg transition-all ${
@@ -666,14 +669,12 @@ const CompactRouletteTable = () => {
 
       <div className="grid grid-cols-4 gap-3 h-[calc(100vh-80px)] relative z-0">
         
-        {/* Main Table */}
         <div className="col-span-3">
           <div 
             ref={tableRef}
             className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl p-3 border-2 border-amber-500/20 h-full relative"
           >
             
-            {/* Chips on table */}
             {gameState.chips.map(chip => (
               <div
                 key={chip.id}
@@ -687,10 +688,8 @@ const CompactRouletteTable = () => {
               </div>
             ))}
 
-            {/* Table Grid */}
             <div className="grid grid-cols-13 grid-rows-6 gap-1 h-full">
               
-              {/* Zero */}
               <div className="col-span-1 row-span-2">
                 <div 
                   className="h-full bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-emerald-500 transition-all border border-emerald-500"
@@ -700,7 +699,6 @@ const CompactRouletteTable = () => {
                 </div>
               </div>
 
-              {/* Numbers 1-36 */}
               <div className="col-span-9 row-span-4 grid grid-rows-12 gap-0.5">
                 {numbersLayout.map((row, rowIndex) => (
                   <div key={rowIndex} className="grid grid-cols-3 gap-0.5">
@@ -717,7 +715,6 @@ const CompactRouletteTable = () => {
                 ))}
               </div>
 
-              {/* Columns */}
               <div className="col-span-3 row-span-4 grid grid-rows-3 gap-1">
                 {['1st', '2nd', '3rd'].map((column, index) => (
                   <div 
@@ -730,7 +727,6 @@ const CompactRouletteTable = () => {
                 ))}
               </div>
 
-              {/* Outside Bets */}
               <div className="col-span-13 row-span-2 grid grid-cols-9 gap-1">
                 {[
                   { label: '1-12', type: 'dozen', value: '1st', useButtonSound: false },
@@ -756,7 +752,6 @@ const CompactRouletteTable = () => {
               </div>
             </div>
 
-            {/* Game History */}
             <div className="absolute top-2 right-2 bg-black/70 rounded-lg p-2">
               <div className="flex space-x-1">
                 {gameState.gameHistory.slice(0, 8).map((num, index) => (
@@ -773,7 +768,6 @@ const CompactRouletteTable = () => {
               </div>
             </div>
 
-            {/* Total Bet */}
             <div className="absolute bottom-2 left-2 bg-black/70 rounded-lg px-3 py-1">
               <div className="text-green-400 text-sm font-bold">
                 Bet: <span className="text-amber-400">₹{gameState.totalBet}</span>
@@ -782,10 +776,8 @@ const CompactRouletteTable = () => {
           </div>
         </div>
 
-        {/* Control Panel */}
         <div className="col-span-1 space-y-2">
           
-          {/* Chip Selector */}
           <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 h-[40%]">
             <h3 className="text-white font-bold mb-3 text-center text-sm">Chips</h3>
             <div className="space-y-2 h-[calc(100%-2rem)] flex flex-col justify-between">
@@ -803,7 +795,6 @@ const CompactRouletteTable = () => {
             </div>
           </div>
 
-          {/* Game Controls */}
           <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 h-[30%]">
             <div className="space-y-2 h-full flex flex-col justify-between">
               <div className="text-center">
@@ -829,7 +820,6 @@ const CompactRouletteTable = () => {
             </div>
           </div>
 
-          {/* Statistics */}
           <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 h-[15%]">
             <h3 className="text-white font-bold mb-1 text-center text-sm">Stats</h3>
             <div className="grid grid-cols-3 gap-1 text-xs">
@@ -848,7 +838,6 @@ const CompactRouletteTable = () => {
             </div>
           </div>
 
-          {/* Bet Info */}
           <div className="bg-slate-800 rounded-xl p-3 border border-slate-700 h-[15%]">
             <div className="text-center h-full flex flex-col justify-center">
               <div className="text-slate-300 text-sm">Chips on table</div>

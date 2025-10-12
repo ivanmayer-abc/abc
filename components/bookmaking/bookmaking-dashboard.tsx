@@ -105,7 +105,7 @@ export default function ClientBookmakingDashboard({
     <div className="container mx-auto px-4 py-6 lg:space-y-6 space-y-3 pb-[70px] lg:pb-0">
       <div className="lg:space-y-2 space-y-1">
         <h1 className="lg:text-3xl text-xl font-bold tracking-tight">
-          {categoryParam ? `${formatCategoryForDisplay(categoryParam)} Betting` : 'Sports Betting'}
+          {categoryParam ? `${formatCategoryForDisplay(categoryParam)} betting` : 'Sports betting'}
         </h1>
         <p className="text-muted-foreground text-sm lg:text-md">
           Place your bets on upcoming events
@@ -124,7 +124,7 @@ export default function ClientBookmakingDashboard({
                     size="sm"
                     className="text-xs sm:text-sm"
                   >
-                    All Events
+                    All events
                   </Button>
                 </Link>
                 {categories.map(category => (
