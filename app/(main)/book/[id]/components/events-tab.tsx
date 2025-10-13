@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator'
 import { Trophy } from 'lucide-react'
 import { formatter } from '@/lib/utils'
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import BettingSlipWrapper from '@/components/bookmaking/betting-slip-wrapper'
 import { toast } from 'sonner'
 
@@ -25,10 +27,17 @@ interface SelectedOutcome {
 }
 
 export default function EventsTab({ book, userBets }: EventsTabProps) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
 
   const handleOutcomeClick = (outcome: any, event: any) => {
+    if (!session) {
+      router.push(`/login?callbackUrl=/book/${book.id}`)
+      return
+    }
+
     if (!book.isUpcoming) {
       toast.error('Bets are no longer accepted for this book as the event has already started.')
       return
@@ -68,6 +77,26 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
     }
   }
 
+  const getButtonClassName = (isUpcoming: boolean, isUserLoggedIn: boolean, outcomesCount: number) => {
+    const baseClass = `h-auto py-4 sm:py-6 px-3 sm:px-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
+      outcomesCount <= 4 ? 'lg:flex-1' : ''
+    }`
+    
+    return `${baseClass} cursor-pointer`
+  }
+
+  const getTextClassName = (isUpcoming: boolean, isUserLoggedIn: boolean) => {
+    if (!isUpcoming) return 'text-muted-foreground'
+    if (!isUserLoggedIn) return 'text-foreground group-hover:text-primary'
+    return 'text-foreground group-hover:text-primary'
+  }
+
+  const getOddsClassName = (isUpcoming: boolean, isUserLoggedIn: boolean) => {
+    if (!isUpcoming) return 'text-muted-foreground bg-muted'
+    if (!isUserLoggedIn) return 'text-primary bg-primary/10'
+    return 'text-primary bg-primary/10'
+  }
+
   return (
     <>
       <Card>
@@ -75,7 +104,9 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
           <CardTitle>Events & Betting Options</CardTitle>
           <CardDescription>
             {book.isUpcoming 
-              ? 'Choose an event and place your bet on the desired outcome'
+              ? session 
+                ? 'Choose an event and place your bet on the desired outcome'
+                : 'Choose an event to place your bet (Login required)'
               : book.isLive 
                 ? 'Event is LIVE - Bets are no longer accepted'
                 : 'Bets are no longer accepted for this book as the event has started'
@@ -148,15 +179,11 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
                         onClick={() => book.isUpcoming && handleOutcomeClick(outcome, event)}
                         disabled={!book.isUpcoming}
                       >
-                        <div className={`font-semibold text-sm sm:text-base text-center break-words ${
-                          book.isUpcoming ? 'text-foreground group-hover:text-primary' : 'text-muted-foreground'
-                        }`}>
+                        <div className={`font-semibold text-sm sm:text-base text-center break-words ${getTextClassName(book.isUpcoming, !!session)}`}>
                           {outcome.name}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xl sm:text-2xl font-bold px-2 sm:px-3 py-1 rounded-md ${
-                            book.isUpcoming ? 'text-primary bg-primary/10' : 'text-muted-foreground bg-muted'
-                          }`}>
+                        <div className="flex flex-col items-center gap-2">
+                          <span className={`text-xl sm:text-2xl font-bold px-2 sm:px-3 py-1 rounded-md ${getOddsClassName(book.isUpcoming, !!session)}`}>
                             {outcome.odds.toFixed(2)}
                           </span>
                         </div>

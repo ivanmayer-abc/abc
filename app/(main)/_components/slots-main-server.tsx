@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,7 +37,7 @@ const slotGames = [
   },
 ];
 
-const SlotsMain = () => {
+export default async function SlotsMainServer() {
     return (
         <div className="mt-5 space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -53,7 +53,7 @@ const SlotsMain = () => {
                 </Link>
             </div>
 
-            <main className="w-full flex items-center justify-center mt-4">
+            <main className="w-full flex items-center justify-center mt-4 group/carousel">
                 <Carousel
                 opts={{
                     align: "start",
@@ -68,12 +68,9 @@ const SlotsMain = () => {
                         <Image
                             className="rounded-xl transition-opacity group-hover:opacity-75"
                             src={game.image}
-                            width={300}
-                            height={300}
+                            width={400}
+                            height={400}
                             alt={`${game.name} preview`}
-                            loading={index < 2 ? "eager" : "lazy"} // Lazy load images beyond first 2
-                            placeholder="blur"
-                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-2 border-red-600">
                             <h3 className="absolute top-4 left-4 text-white text-xl font-bold">
@@ -82,7 +79,6 @@ const SlotsMain = () => {
                             <Link
                             href={game.href}
                             className="flex justify-center items-center p-10 bg-red-600 rounded-full hover:bg-red-700 group/play transition-colors relative scale-125"
-                            prefetch={false} // Don't prefetch slot game pages
                             >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -91,6 +87,18 @@ const SlotsMain = () => {
                                 viewBox="0 0 36 36"
                                 fill="none"
                                 className="absolute transition-opacity group-hover/play:opacity-0"
+                                style={{ color: "var(--accent_color_6)" }}
+                            >
+                                <path d="M27.538 13.625 13.45 5.545a4.987 4.987 0 0 0-7.48 4.376v16.216a4.988 4.988 0 0 0 7.48 4.317l14.088-8.079a4.988 4.988 0 0 0 0-8.633v-.117Z" fill="white" />
+                            </svg>
+                            <svg
+                                width="36"
+                                height="36"
+                                viewBox="0 0 36 36"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="absolute opacity-0 transition-opacity group-hover/play:opacity-100"
+                                style={{ color: "var(--accent_color_6)" }}
                             >
                                 <path d="M27.538 13.625 13.45 5.545a4.987 4.987 0 0 0-7.48 4.376v16.216a4.988 4.988 0 0 0 7.48 4.317l14.088-8.079a4.988 4.988 0 0 0 0-8.633v-.117Z" fill="white" />
                             </svg>
@@ -98,7 +106,6 @@ const SlotsMain = () => {
                             <Link
                             href={game.demoHref}
                             className="text-white rounded-md transition-colors text-center hover:text-red-600 mt-2 absolute bottom-5 text-xl"
-                            prefetch={false}
                             >
                             DEMO
                             </Link>
@@ -107,10 +114,10 @@ const SlotsMain = () => {
                     </CarouselItem>
                     ))}
                 </CarouselContent>
+                <CarouselPrevious className="absolute left-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 group-hover/carousel:disabled:opacity-0 transition-opacity duration-200 z-10 bg-background/80 backdrop-blur-sm border-2 disabled:opacity-0" />
+                <CarouselNext className="absolute right-5 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 group-hover/carousel:disabled:opacity-0 transition-opacity duration-200 z-10 bg-background/80 backdrop-blur-sm border-2 disabled:opacity-0" />
                 </Carousel>
             </main>
         </div>
     );
 }
- 
-export default SlotsMain;

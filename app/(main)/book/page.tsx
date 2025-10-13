@@ -16,19 +16,6 @@ function convertBookStatus(status: any): 'ACTIVE' | 'INACTIVE' | 'COMPLETED' {
 
 async function getBooksData(category?: string, page: number = 1, limit: number = 10) {
   try {
-    const user = await currentUser()
-    if (!user?.id) {
-      return { 
-        books: [], 
-        pagination: { 
-          currentPage: 1, 
-          totalPages: 0, 
-          totalCount: 0, 
-          hasNext: false, 
-          hasPrev: false 
-        } 
-      }
-    }
 
     const skip = (page - 1) * limit
 

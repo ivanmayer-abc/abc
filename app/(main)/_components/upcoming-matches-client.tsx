@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -23,11 +24,17 @@ interface UpcomingMatchesClientProps {
 }
 
 export default function UpcomingMatchesClient({ books = [] }: UpcomingMatchesClientProps) {
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
 
   const handleOutcomeClick = (outcome: Outcome, event: Event, book: Book) => {
+    if (!session) {
+      router.push(`/login?callbackUrl=/book/${book.id}`)
+      return
+    }
+
     const now = new Date()
     const bookDate = new Date(book.date)
     
@@ -69,7 +76,11 @@ export default function UpcomingMatchesClient({ books = [] }: UpcomingMatchesCli
           <CarouselContent className="-ml-2">
             {books.map((book) => (
               <CarouselItem key={book.id} className="pl-1 md:pl-2 basis-4/5 sm:basis-1/2 lg:basis-1/3">
-                <MatchCard book={book} onOutcomeClick={handleOutcomeClick} />
+                <MatchCard 
+                  book={book} 
+                  onOutcomeClick={handleOutcomeClick}
+                  isUserLoggedIn={!!session}
+                />
               </CarouselItem>
             ))}
           </CarouselContent>
@@ -95,15 +106,23 @@ export default function UpcomingMatchesClient({ books = [] }: UpcomingMatchesCli
 interface MatchCardProps {
   book: Book
   onOutcomeClick: (outcome: Outcome, event: Event, book: Book) => void
+  isUserLoggedIn: boolean
 }
 
-function MatchCard({ book, onOutcomeClick }: MatchCardProps) {
+function MatchCard({ book, onOutcomeClick, isUserLoggedIn }: MatchCardProps) {
   const mainTeams = book.teams?.slice(0, 2) || []
   const firstEvent = book.events?.[0]
   const displayCategory = book.category?.charAt(0).toUpperCase() + book.category?.slice(1).toLowerCase() || ''
   const now = new Date()
   const bookDate = new Date(book.date)
   const isAcceptingBets = now < bookDate
+
+  const handleOutcomeClickWrapper = (outcome: Outcome, event: Event, book: Book) => {
+    if (!isUserLoggedIn) {
+      return
+    }
+    onOutcomeClick(outcome, event, book)
+  }
 
   return (
     <div className="h-full">
@@ -114,9 +133,9 @@ function MatchCard({ book, onOutcomeClick }: MatchCardProps) {
               <h3 className="font-semibold text-sm truncate text-foreground mb-1 group-hover:text-primary transition-colors">
                 {book.title}
               </h3>
-            <Badge variant="secondary" className="text-xs bg-muted px-2 py-0">
+              <Badge variant="secondary" className="text-xs bg-muted px-2 py-0">
                 {displayCategory}
-            </Badge>
+              </Badge>
             </div>
           </div>
 
@@ -163,11 +182,22 @@ function MatchCard({ book, onOutcomeClick }: MatchCardProps) {
                   <div
                     key={outcome.id}
                     className={`flex items-center justify-between p-2 bg-background rounded-lg border border-border transition-all duration-200 group/outcome ${
-                      isAcceptingBets 
+                      isAcceptingBets && isUserLoggedIn
                         ? 'cursor-pointer hover:bg-primary/10 hover:border-primary/30' 
+                        : isAcceptingBets && !isUserLoggedIn
+                        ? 'cursor-pointer hover:bg-primary/10 hover:border-primary/30'
                         : 'cursor-not-allowed opacity-60'
                     }`}
-                    onClick={() => isAcceptingBets && onOutcomeClick(outcome, firstEvent, book)}
+                    onClick={() => {
+                      if (!isAcceptingBets) return
+                      
+                      if (!isUserLoggedIn) {
+                        onOutcomeClick(outcome, firstEvent, book)
+                        return
+                      }
+                      
+                      handleOutcomeClickWrapper(outcome, firstEvent, book)
+                    }}
                   >
                     <span className={`text-xs font-medium truncate mr-2 flex-1 ${
                       isAcceptingBets ? 'group-hover/outcome:text-primary' : ''

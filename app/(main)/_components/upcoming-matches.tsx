@@ -2,15 +2,13 @@ import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, ArrowRight, Clock } from 'lucide-react'
+import { ArrowRight, Clock } from 'lucide-react'
 import UpcomingMatchesClient from './upcoming-matches-client'
 import { Book as BookType } from '@/app/types/bookmaking'
 
 async function getUpcomingMatches(): Promise<BookType[]> {
   try {
     const user = await currentUser()
-    if (!user?.id) return []
 
     const now = new Date()
     

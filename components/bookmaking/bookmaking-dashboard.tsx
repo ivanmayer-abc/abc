@@ -18,6 +18,7 @@ import { Trophy, ArrowRight, Star } from 'lucide-react'
 import BettingSlipWrapper from './betting-slip-wrapper'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface SelectedOutcome {
   id: string
@@ -30,7 +31,6 @@ interface SelectedOutcome {
 interface PaginationInfo {
   currentPage: number
   totalPages: number
-  totalCount: number
   hasNext: boolean
   hasPrev: boolean
 }
@@ -48,11 +48,17 @@ export default function ClientBookmakingDashboard({
   initialCategories,
   categoryParam
 }: ClientBookmakingDashboardProps) {
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
 
   const handleOutcomeClick = (outcome: any, event: any, book: any) => {
+    if (!session) {
+      router.push(`/login?callbackUrl=/book/${book.id}`)
+      return
+    }
+
     const now = new Date()
     const bookDate = new Date(book.date)
     
@@ -96,7 +102,6 @@ export default function ClientBookmakingDashboard({
   const pagination = initialPagination || {
     currentPage: 1,
     totalPages: 0,
-    totalCount: 0,
     hasNext: false,
     hasPrev: false
   }
@@ -155,6 +160,7 @@ export default function ClientBookmakingDashboard({
                 book={book}
                 onOutcomeClick={handleOutcomeClick}
                 currentCategory={categoryParam}
+                isUserLoggedIn={!!session}
               />
             ))}
           </div>
@@ -277,11 +283,13 @@ function ShadcnPagination({
 function BookCard({ 
   book, 
   onOutcomeClick,
-  currentCategory
+  currentCategory,
+  isUserLoggedIn
 }: { 
   book: Book
   onOutcomeClick: (outcome: any, event: any, book: any) => void
   currentCategory?: string
+  isUserLoggedIn: boolean
 }) {
   const bookStatus = book.displayStatus || (book.isLive ? 'LIVE' : 'UPCOMING')
   
@@ -318,27 +326,34 @@ function BookCard({
             <div
               key={outcome.id}
               className={`flex items-center justify-between w-full p-2 sm:p-3 bg-background rounded-lg border border-border transition-all duration-200 group ${
-                isAcceptingBets 
+                isAcceptingBets && isUserLoggedIn
                   ? 'cursor-pointer hover:bg-primary/10 hover:border-primary/30' 
+                  : isAcceptingBets && !isUserLoggedIn
+                  ? 'cursor-pointer hover:bg-primary/10 hover:border-primary/30 border-primary/30'
                   : 'cursor-not-allowed opacity-60'
               }`}
-              onClick={() => isAcceptingBets && onOutcomeClick(outcome, event, book)}
+              onClick={() => {
+                if (!isAcceptingBets) return
+                onOutcomeClick(outcome, event, book)
+              }}
             >
               <span className={`text-xs sm:text-sm font-medium truncate mr-2 flex-1 ${
                 isAcceptingBets ? 'group-hover:text-primary' : ''
               }`}>
                 {outcome.name}
               </span>
-              <Badge 
-                variant="secondary" 
-                className={`text-xs sm:text-sm shrink-0 min-w-10 sm:min-w-12 text-center ${
-                  isAcceptingBets 
-                    ? 'bg-primary/20 group-hover:bg-primary/30' 
-                    : 'bg-muted'
-                }`}
-              >
-                {outcome.odds.toFixed(2)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xs sm:text-sm shrink-0 min-w-10 sm:min-w-12 text-center ${
+                    isAcceptingBets 
+                      ? 'bg-primary/20 group-hover:bg-primary/30' 
+                      : 'bg-muted'
+                  }`}
+                >
+                  {outcome.odds.toFixed(2)}
+                </Badge>
+              </div>
             </div>
           ))}
         </div>

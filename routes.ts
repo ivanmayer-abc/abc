@@ -7,6 +7,8 @@ export const publicRoutes = [
     '/new-verification'
 ]
 
+export const bookRoute = '/book'
+
 export const authRoutes = [
     '/login',
     '/register',
