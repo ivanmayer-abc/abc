@@ -159,7 +159,7 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
             <div className="space-y-3 text-sm mb-4 bg-green-500/10 p-3 rounded-lg border border-green-500/20">
               <div className="flex items-center gap-2 font-semibold text-green-400 mb-2">
                 <Sparkles className="h-4 w-4" />
-                You'll get:
+                You&apos;ll get:
               </div>
               
               {promoDetails.type === 'DEPOSIT_BONUS' && (
