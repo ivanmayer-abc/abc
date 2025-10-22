@@ -1,0 +1,30 @@
+{
+  "Header": {
+    "events": "Events",
+    "myBets": "My Bets",
+    "promos": "Promos",
+    "games": "Games",
+    "roulette": "Roulette",
+    "instant": "Instant"
+  },
+  "Home": {
+    "upcomingMatches": "Upcoming matches",
+    "viewAll": "View all",
+    "noUpcomingMatches": "No upcoming matches",
+    "noMatchesDescription": "There are no upcoming matches scheduled at the moment. Check back later for new events!",
+    "browseAllEvents": "Browse all events"
+  },
+  "Banners": {
+    "slotCollection": "New slots collections awaits!",
+    "getStarted": "Get started!",
+    "betEvents": "Bet On Upcoming Events!",
+    "placeBets": "Place your bets!",
+    "fastSupport": "Fast Support!",
+    "chatNow": "Chat Now!",
+    "accountHistory": "Check Your Account History!",
+    "viewNow": "View Now!"
+  },
+  "Common": {
+    "altbet": "altbet"
+  }
+}

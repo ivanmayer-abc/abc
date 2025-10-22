@@ -33,7 +33,7 @@ import {
   getRandomSymbol
 } from "./slot-machine.data";
 import { PayoutsSheet } from "./payout-sheet.server";
-import { useBalance } from "../../../../actions/use-balance";
+import { useBalance } from "../../../../../actions/use-balance";
 
 type Position = {
   col: number;

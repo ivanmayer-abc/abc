@@ -1,0 +1,30 @@
+{
+  "Header": {
+    "events": "इवेंट्स",
+    "myBets": "मेरे बेट्स",
+    "promos": "प्रोमो",
+    "games": "गेम्स",
+    "roulette": "रूलेट",
+    "instant": "इंस्टेंट"
+  },
+  "Home": {
+    "upcomingMatches": "आगामी मैच",
+    "viewAll": "सभी देखें",
+    "noUpcomingMatches": "कोई आगामी मैच नहीं",
+    "noMatchesDescription": "फिलहाल कोई आगामी मैच शेड्यूल नहीं है। नई इवेंट्स के लिए बाद में चेक करें!",
+    "browseAllEvents": "सभी इवेंट्स देखें"
+  },
+  "Banners": {
+    "slotCollection": "नए स्लॉट कलेक्शन का इंतज़ार!",
+    "getStarted": "शुरू करें!",
+    "betEvents": "आगामी इवेंट्स पर बेट लगाएं!",
+    "placeBets": "अपने बेट लगाएं!",
+    "fastSupport": "फास्ट सपोर्ट!",
+    "chatNow": "अभी चैट करें!",
+    "accountHistory": "अपना अकाउंट हिस्ट्री चेक करें!",
+    "viewNow": "अभी देखें!"
+  },
+  "Common": {
+    "altbet": "altbet"
+  }
+}

@@ -1,13 +1,17 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./lib/i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        domains: [
-            "res.cloudinary.com"
-        ]
-    },
-    experimental: {
-        serverComponentsExternalPackages: [],
-    },
+  experimental: {
+    serverComponentsExternalPackages: [],
+  },
+  images: {
+    domains: [
+      "res.cloudinary.com"
+    ]
+  }
 }
 
-module.exports = nextConfig
+module.exports = withNextIntl(nextConfig);

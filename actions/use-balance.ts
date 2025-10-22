@@ -25,23 +25,34 @@ export const useBalance = () => {
     }
   }, []);
 
-  const updateBalance = useCallback(async (amount: number, type: 'deposit' | 'withdrawal') => {
+  const updateBalance = useCallback(async (amount: number, type: 'deposit' | 'withdrawal', description?: string, category?: string) => {
     try {
-      const response = await fetch('/api/balance', {
+      const response = await fetch('/api/transactions/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, type }),
+        body: JSON.stringify({ 
+          amount, 
+          type, 
+          description: description || `Slot machine ${type}`,
+          category: category || 'slots'
+        }),
       });
 
-      if (!response.ok) throw new Error(`Failed to ${type} ${amount}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to ${type} ${amount}`);
+      }
       
-      const data = await response.json();
-      return data.balance;
+      const transaction = await response.json();
+      
+      await fetchBalance();
+      
+      return transaction;
     } catch (error) {
       console.error(`Error during ${type}:`, error);
       throw error;
     }
-  }, []);
+  }, [fetchBalance]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

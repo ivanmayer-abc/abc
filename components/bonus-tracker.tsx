@@ -1,0 +1,377 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Gift, RotateCcw, Coins, Sparkles, ArrowRight, Crown, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { formatter } from '@/lib/utils';
+
+interface Bonus {
+  id: string;
+  type: string;
+  amount: number;
+  bonusAmount: any;
+  remainingAmount: any;
+  wageringRequirement: number;
+  completedWagering: any;
+  status: string;
+  freeSpinsCount?: number;
+  freeSpinsUsed?: number;
+  freeSpinsWinnings?: any;
+  expiresAt: string;
+  promoCode?: {
+    code: string;
+    description: string;
+    type: string;
+    bonusPercentage?: number;
+    maxBonusAmount?: any;
+    minDepositAmount?: any;
+    freeSpinsCount?: number;
+    freeSpinsGame?: string;
+    cashbackPercentage?: number;
+    wageringRequirement?: number;
+  };
+}
+
+interface UserPromoCode {
+  id: string;
+  promoCode: {
+    id: string;
+    code: string;
+    type: string;
+    description: string;
+    bonusPercentage?: number;
+    maxBonusAmount?: any;
+    minDepositAmount?: any;
+    freeSpinsCount?: number;
+    freeSpinsGame?: string;
+    cashbackPercentage?: number;
+    wageringRequirement?: number;
+  };
+}
+
+export function BonusTracker() {
+  const [bonuses, setBonuses] = useState<Bonus[]>([]);
+  const [userPromoCodes, setUserPromoCodes] = useState<UserPromoCode[]>([]);
+  const [summary, setSummary] = useState({ 
+    totalRemaining: 0, 
+    activeCount: 0
+  });
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchBonuses();
+    fetchUserPromoCodes();
+  }, []);
+
+  const fetchBonuses = async () => {
+    try {
+      const response = await fetch('/api/bonuses');
+      if (response.ok) {
+        const data = await response.json();
+        setBonuses(data.bonuses);
+        setSummary(data.summary);
+      }
+    } catch (error) {
+      console.error('Failed to fetch bonuses:', error);
+    }
+  };
+
+  const fetchUserPromoCodes = async () => {
+    try {
+      const response = await fetch('/api/user-promo-codes');
+      if (response.ok) {
+        const data = await response.json();
+        setUserPromoCodes(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user promo codes:', error);
+    }
+  };
+
+  const toNumber = (value: any): number => {
+    if (typeof value === 'number') return value;
+    if (value && typeof value === 'object' && 'toNumber' in value) {
+      return value.toNumber();
+    }
+    return parseFloat(value) || 0;
+  };
+
+  const handleActivateBonus = () => {
+    router.push('/transactions/new/deposit');
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING_WAGERING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'COMPLETED': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'FORFEITED': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'FREE_SPINS': return <RotateCcw className="h-4 w-4 text-purple-400" />;
+      case 'DEPOSIT_BONUS': return <Coins className="h-4 w-4 text-blue-400" />;
+      case 'CASHBACK': return <Sparkles className="h-4 w-4 text-green-400" />;
+      default: return <Gift className="h-4 w-4 text-orange-400" />;
+    }
+  };
+
+  const realTotalRemaining = bonuses.reduce((total, bonus) => {
+    const remaining = toNumber(bonus.remainingAmount);
+    const winnings = toNumber(bonus.freeSpinsWinnings);
+    return total + remaining + winnings;
+  }, 0);
+
+  const depositPromoCodes = userPromoCodes.filter(upc => 
+    upc.promoCode.type === 'DEPOSIT_BONUS'
+  );
+
+  const hasActiveContent = bonuses.length > 0 || depositPromoCodes.length > 0;
+
+  return (
+    <div className="space-y-4">
+      <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                <Crown className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg text-white">Bonus summary</CardTitle>
+                <CardDescription className="text-gray-400">
+                  {summary.activeCount} active • {depositPromoCodes.length} pending
+                </CardDescription>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
+                {formatter.format(realTotalRemaining)}
+              </div>
+              <div className="text-xs text-gray-400">Available balance</div>
+            </div>
+          </div>
+        </CardHeader>
+        
+        {depositPromoCodes.length > 0 && (
+          <CardContent className="pt-0">
+            <Button 
+              onClick={handleActivateBonus}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg"
+              size="lg"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Activate {depositPromoCodes.length} bonus{depositPromoCodes.length > 1 ? 'es' : ''} with deposit
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </CardContent>
+        )}
+      </Card>
+
+      {depositPromoCodes.map((userPromoCode) => {
+        const promoCode = userPromoCode.promoCode;
+        const minDepositAmount = promoCode.minDepositAmount ? toNumber(promoCode.minDepositAmount) : null;
+        const maxBonusAmount = promoCode.maxBonusAmount ? toNumber(promoCode.maxBonusAmount) : null;
+
+        return (
+          <Card key={userPromoCode.id} className="bg-gradient-to-br from-blue-500/5 to-blue-600/5 border-blue-500/20">
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg mt-1">
+                    <Coins className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base text-white flex items-center gap-2">
+                      {promoCode.code}
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      {promoCode.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  Ready to activate
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-4 text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <h4 className="font-semibold text-white mb-2 text-lg">Deposit bonus ready!</h4>
+                <p className="text-sm text-blue-300 mb-4 leading-relaxed">
+                  Get <span className="font-bold text-white">{promoCode.bonusPercentage}%</span> bonus on your deposit
+                  {maxBonusAmount && (
+                    <span className="block">up to <span className="font-bold text-white">{formatter.format(maxBonusAmount)}</span></span>
+                  )}
+                </p>
+                <Button 
+                  onClick={handleActivateBonus}
+                  size="lg"
+                >
+                  Deposit to activate
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div className="bg-gray-800/50 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Bonus Rate</div>
+                  <div className="font-semibold text-white text-lg">{promoCode.bonusPercentage}%</div>
+                </div>
+                {maxBonusAmount && maxBonusAmount > 0 && (
+                  <div className="bg-gray-800/50 rounded-lg p-3">
+                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Max Bonus</div>
+                    <div className="font-semibold text-white text-lg">{formatter.format(maxBonusAmount)}</div>
+                  </div>
+                )}
+                {minDepositAmount && minDepositAmount > 0 && (
+                  <div className="bg-gray-800/50 rounded-lg p-3 sm:col-span-2">
+                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Minimum Deposit</div>
+                    <div className="font-semibold text-white">{formatter.format(minDepositAmount)}</div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+
+      {bonuses.map((bonus) => {
+        const bonusAmount = toNumber(bonus.bonusAmount);
+        const remainingAmount = toNumber(bonus.remainingAmount);
+        const completedWagering = toNumber(bonus.completedWagering);
+        const freeSpinsWinnings = toNumber(bonus.freeSpinsWinnings);
+        const freeSpinsCount = bonus.promoCode?.freeSpinsCount || bonus.freeSpinsCount;
+        const freeSpinsGame = bonus.promoCode?.freeSpinsGame;
+        
+        const getCardGradient = (type: string) => {
+          switch (type) {
+            case 'FREE_SPINS': return 'from-purple-500/5 to-purple-600/5 border-purple-500/20';
+            case 'CASHBACK': return 'from-green-500/5 to-green-600/5 border-green-500/20';
+            case 'FREE_BET': return 'from-orange-500/5 to-orange-600/5 border-orange-500/20';
+            default: return 'from-gray-800 to-gray-900 border-gray-700';
+          }
+        };
+
+        return (
+          <Card key={bonus.id} className={`bg-gradient-to-br ${getCardGradient(bonus.type)}`}>
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-start">
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 rounded-lg mt-1 ${
+                    bonus.type === 'FREE_SPINS' ? 'bg-purple-500/20' :
+                    bonus.type === 'CASHBACK' ? 'bg-green-500/20' :
+                    bonus.type === 'FREE_BET' ? 'bg-orange-500/20' : 'bg-blue-500/20'
+                  }`}>
+                    {getTypeIcon(bonus.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base text-white flex items-center gap-2 truncate">
+                      {bonus.promoCode?.code || 'Bonus'}
+                    </CardTitle>
+                    <CardDescription className="text-gray-400 truncate">
+                      {bonus.promoCode?.description}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="secondary" className={getStatusColor(bonus.status)}>
+                  {bonus.status.replace('_', ' ')}
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              {bonus.wageringRequirement > 0 && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Wagering Progress</span>
+                    <span className="text-white font-medium">
+                      ${completedWagering.toFixed(2)} / ${bonus.wageringRequirement.toFixed(2)}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={(completedWagering / bonus.wageringRequirement) * 100} 
+                    className="h-2 bg-gray-700"
+                  />
+                </div>
+              )}
+
+              {freeSpinsCount && (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Free Spins</span>
+                    <span className="text-white font-medium">
+                      {bonus.freeSpinsUsed || 0} / {freeSpinsCount} used
+                    </span>
+                  </div>
+                  <Progress 
+                    value={(((bonus.freeSpinsUsed || 0) / freeSpinsCount) * 100)} 
+                    className="h-2 bg-gray-700"
+                  />
+                  {freeSpinsGame && (
+                    <div className="text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded text-center">
+                      Game: {freeSpinsGame}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(bonusAmount > 0 || remainingAmount > 0) && (
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {bonusAmount > 0 && (
+                    <div className="bg-gray-800/50 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Bonus Amount</div>
+                      <div className="font-semibold text-white text-lg">${bonusAmount.toFixed(2)}</div>
+                    </div>
+                  )}
+                  {remainingAmount > 0 && (
+                    <div className="bg-gray-800/50 rounded-lg p-3">
+                      <div className="text-gray-400 text-xs mb-1">Remaining</div>
+                      <div className="font-semibold text-green-400 text-lg">${remainingAmount.toFixed(2)}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {freeSpinsWinnings > 0 && (
+                <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs mb-1">Free Spins Winnings</div>
+                  <div className="font-semibold text-green-400 text-lg">${freeSpinsWinnings.toFixed(2)}</div>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-700/50">
+                <span>Expires: {new Date(bonus.expiresAt).toLocaleDateString()}</span>
+                <span>{bonus.type.replace('_', ' ')}</span>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+
+      {!hasActiveContent && (
+        <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Gift className="h-8 w-8 text-gray-500" />
+            </div>
+            <h3 className="text-white font-semibold text-lg mb-2">No Active Bonuses</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Apply a promo code to unlock exclusive rewards
+            </p>
+            <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

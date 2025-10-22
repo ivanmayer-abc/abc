@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
+import { createTransactionWithCommissions } from '@/lib/commission-processor';
 
 export async function GET(req: Request) {
   try {
@@ -30,6 +31,32 @@ export async function GET(req: Request) {
     return NextResponse.json({ transactions });
   } catch (error) {
     console.log('[SLOT_TRANSACTIONS_GET]', error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const user = await currentUser();
+    if (!user?.id) return new NextResponse("Unauthorized", { status: 401 });
+
+    const { amount, type, description, category = 'slots' } = await req.json();
+
+    if (!amount || typeof amount !== 'number') {
+      return new NextResponse("Invalid amount", { status: 400 });
+    }
+
+    const transaction = await createTransactionWithCommissions(
+      user.id,
+      amount,
+      type,
+      description || `Slot machine ${type}`,
+      category
+    );
+
+    return NextResponse.json(transaction);
+  } catch (error) {
+    console.log('[SLOT_TRANSACTIONS_POST]', error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

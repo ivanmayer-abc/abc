@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
+import { createTransactionWithCommissions } from '@/lib/commission-processor';
 
 export async function GET(req: Request) {
   try {
@@ -98,16 +99,13 @@ export async function POST(req: Request) {
       return new NextResponse("Invalid amount", { status: 400 });
     }
 
-    const transaction = await db.transaction.create({
-      data: {
-        userId: user.id,
-        amount,
-        type,
-        description: description || `Slot machine ${type}`,
-        category: category || 'slots',
-        status: 'success'
-      }
-    });
+    const transaction = await createTransactionWithCommissions(
+      user.id,
+      amount,
+      type,
+      description || `${type} transaction`,
+      category || (type === 'withdrawal' ? 'withdrawal' : 'deposit')
+    );
 
     return NextResponse.json(transaction);
   } catch (error) {

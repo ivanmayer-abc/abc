@@ -1,7 +1,13 @@
 import NextAuth from "next-auth"
-
+import createIntlMiddleware from 'next-intl/middleware';
 import authConfig from "./auth.config"
 import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, bookRoute, publicRoutes } from "./routes"
+
+const intlMiddleware = createIntlMiddleware({
+  locales: ['en', 'hi'],
+  defaultLocale: 'en',
+  localePrefix: 'as-needed'
+});
 
 const { auth } = NextAuth(authConfig)
 
@@ -9,12 +15,15 @@ export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
 
+  const isApiRoute = nextUrl.pathname.startsWith('/api')
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
   const isBookRoute = nextUrl.pathname.startsWith(bookRoute)
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+  
+  const pathnameWithoutLocale = nextUrl.pathname.replace(/^\/(en|hi)/, '') || '/'
+  const isPublicRoute = publicRoutes.includes(pathnameWithoutLocale)
+  const isAuthRoute = authRoutes.includes(pathnameWithoutLocale)
 
-  if (isApiAuthRoute || isBookRoute) {
+  if (isApiRoute || isApiAuthRoute || isBookRoute) {
     return null
   }
 
@@ -22,7 +31,7 @@ export default auth((req) => {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
     }
-    return null
+    return intlMiddleware(req)
   }
 
   if (!isLoggedIn && !isPublicRoute) {
@@ -32,13 +41,19 @@ export default auth((req) => {
     }
 
     const encodedCallbackUrl = encodeURIComponent(callbackUrl)
+    const localePrefix = nextUrl.pathname.startsWith('/en') ? '/en' : nextUrl.pathname.startsWith('/hi') ? '/hi' : ''
+    const redirectUrl = `${localePrefix}/login?callbackUrl=${encodedCallbackUrl}`
 
-    return Response.redirect(new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl))
+    return Response.redirect(new URL(redirectUrl, nextUrl))
   }
 
-  return null
+  return intlMiddleware(req)
 })
 
 export const config = {
-    matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: [
+    '/((?!api|_next|_vercel|.*\\..*).*)',
+    '/',
+    '/(en|hi)/:path*'
+  ]
 }
