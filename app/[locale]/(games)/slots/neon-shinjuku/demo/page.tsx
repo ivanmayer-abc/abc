@@ -405,7 +405,7 @@ const SlotMachine = () => {
       className="flex flex-col items-center h-full w-full xl:w-[155px] overflow-hidden relative mx-[4px] z-10"
     >
       <div 
-        ref={el => reelRefs.current[colIndex] = el}
+        ref={el => { reelRefs.current[colIndex] = el; }}
         className="flex flex-col absolute xl:top-0 gap-[1px] w-full"
       >
         {[...Array(15)].map((_, i) => {
