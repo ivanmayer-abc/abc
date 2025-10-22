@@ -22,7 +22,7 @@ function HomeContent() {
           <UpcomingMatches />
         </Suspense>
         
-        {/* <SlotsMainServer /> */}
+        <SlotsMainServer />
       </div>
     </div>
   );
