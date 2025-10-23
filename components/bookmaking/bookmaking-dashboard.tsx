@@ -55,7 +55,7 @@ export default function ClientBookmakingDashboard({
 
   const handleOutcomeClick = (outcome: any, event: any, book: any) => {
     if (!session) {
-      router.push(`/login?callbackUrl=/book/${book.id}`)
+      router.push(`/login?callbackUrl=/events/${book.id}`)
       return
     }
 
@@ -123,7 +123,7 @@ export default function ClientBookmakingDashboard({
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <span className="font-medium text-sm sm:text-base">Categories:</span>
               <div className="flex flex-wrap gap-2">
-                <Link href="/book">
+                <Link href="/events">
                   <Button
                     variant={!categoryParam ? 'default' : 'outline'}
                     size="sm"
@@ -133,7 +133,7 @@ export default function ClientBookmakingDashboard({
                   </Button>
                 </Link>
                 {categories.map(category => (
-                  <Link key={category} href={`/book/category/${formatCategoryForURL(category)}`}>
+                  <Link key={category} href={`/events/category/${formatCategoryForURL(category)}`}>
                     <Button
                       variant={categoryParam && categoryParam.toLowerCase() === category.toLowerCase() ? 'default' : 'outline'}
                       size="sm"
@@ -420,7 +420,7 @@ function BookCard({
           </div>
         </div>
         
-        <Link href={`/book/${book.id}`} className="w-full sm:w-auto">
+        <Link href={`/events/${book.id}`} className="w-full sm:w-auto">
           <Button size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
             All outcomes
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
@@ -485,7 +485,7 @@ function NoBooksCard({ category }: { category?: string }) {
           }
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
-          <Link href="/book">
+          <Link href="/events">
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
               View All Events
             </Button>
