@@ -22,7 +22,6 @@ export async function POST(req: Request) {
           id: bonusId,
           userId: user.id,
           status: 'PENDING_WAGERING',
-          isWithdrawable: true
         }
       });
 
@@ -49,9 +48,7 @@ export async function POST(req: Request) {
         data: {
           remainingAmount: newRemainingAmount,
           withdrawnAmount: newWithdrawnAmount,
-          withdrawnAt: new Date(),
           status: newRemainingAmount <= 0 ? 'COMPLETED' : 'PENDING_WAGERING',
-          isWithdrawable: newRemainingAmount > 0
         }
       });
 
