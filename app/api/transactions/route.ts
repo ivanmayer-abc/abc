@@ -99,13 +99,68 @@ export async function POST(req: Request) {
       return new NextResponse("Invalid amount", { status: 400 });
     }
 
-    const transaction = await createTransactionWithCommissions(
-      user.id,
-      amount,
-      type,
-      description || `${type} transaction`,
-      category || (type === 'withdrawal' ? 'withdrawal' : 'deposit')
-    );
+    const transaction = await db.$transaction(async (tx) => {
+      const newTransaction = await createTransactionWithCommissions(
+        user.id,
+        amount,
+        type,
+        description || `${type} transaction`,
+        category || (type === 'withdrawal' ? 'withdrawal' : 'deposit')
+      );
+
+      if (type === 'deposit' && category === 'transaction') {
+        const pendingDepositBonuses = await tx.bonus.findMany({
+          where: {
+            userId: user.id,
+            type: { in: ['DEPOSIT_BONUS', 'COMBINED'] },
+            status: 'PENDING_ACTIVATION'
+          },
+          include: {
+            promoCode: true
+          }
+        });
+
+        for (const bonus of pendingDepositBonuses) {
+          const depositAmount = amount;
+          const minDepositAmount = bonus.promoCode?.minDepositAmount?.toNumber() || 0;
+          
+          if (depositAmount >= minDepositAmount) {
+            const bonusPercentage = bonus.promoCode?.bonusPercentage || 0;
+            const maxBonusAmount = bonus.promoCode?.maxBonusAmount?.toNumber() || 0;
+            
+            let bonusAmount = depositAmount * (bonusPercentage / 100);
+            
+            if (maxBonusAmount > 0 && bonusAmount > maxBonusAmount) {
+              bonusAmount = maxBonusAmount;
+            }
+
+            await tx.bonus.update({
+              where: { id: bonus.id },
+              data: {
+                amount: depositAmount,
+                bonusAmount: bonusAmount,
+                remainingAmount: bonusAmount,
+                status: 'PENDING_WAGERING',
+                activatedAt: new Date()
+              }
+            });
+
+            await tx.transaction.create({
+              data: {
+                userId: user.id,
+                type: 'deposit',
+                amount: bonusAmount,
+                status: 'success',
+                description: `Bonus credit from ${bonus.promoCode?.code || 'promo code'}`,
+                category: 'bonus'
+              }
+            });
+          }
+        }
+      }
+
+      return newTransaction;
+    });
 
     return NextResponse.json(transaction);
   } catch (error) {

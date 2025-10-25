@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gift, RotateCcw, Coins, Sparkles, ArrowRight, Crown, Zap } from 'lucide-react';
+import { Gift, RotateCcw, Coins, Sparkles, ArrowRight, Crown, Zap, AlertCircle, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatter } from '@/lib/utils';
+import { BonusWithdrawal } from './bonus-withdrawal';
 
 interface Bonus {
   id: string;
@@ -17,6 +18,8 @@ interface Bonus {
   remainingAmount: any;
   wageringRequirement: number;
   completedWagering: any;
+  totalWagered: any;
+  withdrawnAmount: any;
   status: string;
   freeSpinsCount?: number;
   freeSpinsUsed?: number;
@@ -97,11 +100,36 @@ export function BonusTracker() {
     if (value && typeof value === 'object' && 'toNumber' in value) {
       return value.toNumber();
     }
-    return parseFloat(value) || 0;
+    return Number(value) || 0;
   };
 
   const handleActivateBonus = () => {
     router.push('/transactions/new/deposit');
+  };
+
+  const handleWithdrawBonus = async (bonusId: string) => {
+    try {
+      const response = await fetch('/api/bonuses/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bonusId: bonusId,
+          amount: 'full'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        fetchBonuses();
+      } else {
+        console.error('Withdrawal failed:', data.error);
+      }
+    } catch (error) {
+      console.error('Failed to withdraw bonus:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -109,6 +137,7 @@ export function BonusTracker() {
       case 'PENDING_WAGERING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'COMPLETED': return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'FORFEITED': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'PENDING_ACTIVATION': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
@@ -128,11 +157,16 @@ export function BonusTracker() {
     return total + remaining + winnings;
   }, 0);
 
-  const depositPromoCodes = userPromoCodes.filter(upc => 
-    upc.promoCode.type === 'DEPOSIT_BONUS'
+  const pendingActivationBonuses = bonuses.filter(bonus => 
+    bonus.status === 'PENDING_ACTIVATION' && 
+    (bonus.type === 'DEPOSIT_BONUS' || bonus.type === 'COMBINED')
   );
 
-  const hasActiveContent = bonuses.length > 0 || depositPromoCodes.length > 0;
+  const activeBonuses = bonuses.filter(bonus => 
+    bonus.status === 'PENDING_WAGERING' || bonus.status === 'COMPLETED'
+  );
+
+  const hasActiveContent = activeBonuses.length > 0 || pendingActivationBonuses.length > 0;
 
   return (
     <div className="space-y-4">
@@ -146,7 +180,7 @@ export function BonusTracker() {
               <div>
                 <CardTitle className="text-lg text-white">Bonus summary</CardTitle>
                 <CardDescription className="text-gray-400">
-                  {summary.activeCount} active • {depositPromoCodes.length} pending
+                  {activeBonuses.length} active • {pendingActivationBonuses.length} pending
                 </CardDescription>
               </div>
             </div>
@@ -159,7 +193,7 @@ export function BonusTracker() {
           </div>
         </CardHeader>
         
-        {depositPromoCodes.length > 0 && (
+        {pendingActivationBonuses.length > 0 && (
           <CardContent className="pt-0">
             <Button 
               onClick={handleActivateBonus}
@@ -167,20 +201,20 @@ export function BonusTracker() {
               size="lg"
             >
               <Zap className="h-4 w-4 mr-2" />
-              Activate {depositPromoCodes.length} bonus{depositPromoCodes.length > 1 ? 'es' : ''} with deposit
+              Activate {pendingActivationBonuses.length} bonus{pendingActivationBonuses.length > 1 ? 'es' : ''} with deposit
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
         )}
       </Card>
 
-      {depositPromoCodes.map((userPromoCode) => {
-        const promoCode = userPromoCode.promoCode;
-        const minDepositAmount = promoCode.minDepositAmount ? toNumber(promoCode.minDepositAmount) : null;
-        const maxBonusAmount = promoCode.maxBonusAmount ? toNumber(promoCode.maxBonusAmount) : null;
+      {pendingActivationBonuses.map((bonus) => {
+        const promoCode = bonus.promoCode;
+        const minDepositAmount = promoCode?.minDepositAmount ? toNumber(promoCode.minDepositAmount) : 0;
+        const maxBonusAmount = promoCode?.maxBonusAmount ? toNumber(promoCode.maxBonusAmount) : 0;
 
         return (
-          <Card key={userPromoCode.id} className="bg-gradient-to-br from-blue-500/5 to-blue-600/5 border-blue-500/20">
+          <Card key={bonus.id} className="bg-gradient-to-br from-blue-500/5 to-blue-600/5 border-blue-500/20">
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start">
                 <div className="flex items-start gap-3">
@@ -189,10 +223,10 @@ export function BonusTracker() {
                   </div>
                   <div>
                     <CardTitle className="text-base text-white flex items-center gap-2">
-                      {promoCode.code}
+                      {promoCode?.code}
                     </CardTitle>
                     <CardDescription className="text-gray-400">
-                      {promoCode.description}
+                      {promoCode?.description}
                     </CardDescription>
                   </div>
                 </div>
@@ -209,8 +243,8 @@ export function BonusTracker() {
                 </div>
                 <h4 className="font-semibold text-white mb-2 text-lg">Deposit bonus ready!</h4>
                 <p className="text-sm text-blue-300 mb-4 leading-relaxed">
-                  Get <span className="font-bold text-white">{promoCode.bonusPercentage}%</span> bonus on your deposit
-                  {maxBonusAmount && (
+                  Get <span className="font-bold text-white">{promoCode?.bonusPercentage}%</span> bonus on your deposit
+                  {maxBonusAmount > 0 && (
                     <span className="block">up to <span className="font-bold text-white">{formatter.format(maxBonusAmount)}</span></span>
                   )}
                 </p>
@@ -225,15 +259,15 @@ export function BonusTracker() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="bg-gray-800/50 rounded-lg p-3">
                   <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Bonus Rate</div>
-                  <div className="font-semibold text-white text-lg">{promoCode.bonusPercentage}%</div>
+                  <div className="font-semibold text-white text-lg">{promoCode?.bonusPercentage}%</div>
                 </div>
-                {maxBonusAmount && maxBonusAmount > 0 && (
+                {maxBonusAmount > 0 && (
                   <div className="bg-gray-800/50 rounded-lg p-3">
                     <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Max Bonus</div>
                     <div className="font-semibold text-white text-lg">{formatter.format(maxBonusAmount)}</div>
                   </div>
                 )}
-                {minDepositAmount && minDepositAmount > 0 && (
+                {minDepositAmount > 0 && (
                   <div className="bg-gray-800/50 rounded-lg p-3 sm:col-span-2">
                     <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Minimum Deposit</div>
                     <div className="font-semibold text-white">{formatter.format(minDepositAmount)}</div>
@@ -245,13 +279,16 @@ export function BonusTracker() {
         );
       })}
 
-      {bonuses.map((bonus) => {
+      {activeBonuses.map((bonus) => {
         const bonusAmount = toNumber(bonus.bonusAmount);
         const remainingAmount = toNumber(bonus.remainingAmount);
         const completedWagering = toNumber(bonus.completedWagering);
         const freeSpinsWinnings = toNumber(bonus.freeSpinsWinnings);
         const freeSpinsCount = bonus.promoCode?.freeSpinsCount || bonus.freeSpinsCount;
         const freeSpinsGame = bonus.promoCode?.freeSpinsGame;
+        const requiredWagering = bonusAmount * bonus.wageringRequirement;
+        const isWageringComplete = completedWagering >= requiredWagering;
+        const canWithdraw = bonus.status === 'COMPLETED' || (bonus.status === 'PENDING_WAGERING' && isWageringComplete && remainingAmount > 0);
         
         const getCardGradient = (type: string) => {
           switch (type) {
@@ -263,98 +300,129 @@ export function BonusTracker() {
         };
 
         return (
-          <Card key={bonus.id} className={`bg-gradient-to-br ${getCardGradient(bonus.type)}`}>
-            <CardHeader className="pb-4">
-              <div className="flex justify-between items-start">
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg mt-1 ${
-                    bonus.type === 'FREE_SPINS' ? 'bg-purple-500/20' :
-                    bonus.type === 'CASHBACK' ? 'bg-green-500/20' :
-                    bonus.type === 'FREE_BET' ? 'bg-orange-500/20' : 'bg-blue-500/20'
-                  }`}>
-                    {getTypeIcon(bonus.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base text-white flex items-center gap-2 truncate">
-                      {bonus.promoCode?.code || 'Bonus'}
-                    </CardTitle>
-                    <CardDescription className="text-gray-400 truncate">
-                      {bonus.promoCode?.description}
-                    </CardDescription>
-                  </div>
-                </div>
-                <Badge variant="secondary" className={getStatusColor(bonus.status)}>
-                  {bonus.status.replace('_', ' ')}
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {bonus.wageringRequirement > 0 && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Wagering Progress</span>
-                    <span className="text-white font-medium">
-                      ${completedWagering.toFixed(2)} / ${bonus.wageringRequirement.toFixed(2)}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={(completedWagering / bonus.wageringRequirement) * 100} 
-                    className="h-2 bg-gray-700"
-                  />
-                </div>
-              )}
-
-              {freeSpinsCount && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Free Spins</span>
-                    <span className="text-white font-medium">
-                      {bonus.freeSpinsUsed || 0} / {freeSpinsCount} used
-                    </span>
-                  </div>
-                  <Progress 
-                    value={(((bonus.freeSpinsUsed || 0) / freeSpinsCount) * 100)} 
-                    className="h-2 bg-gray-700"
-                  />
-                  {freeSpinsGame && (
-                    <div className="text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded text-center">
-                      Game: {freeSpinsGame}
+          <div key={bonus.id} className="space-y-4">
+            <Card className={`bg-gradient-to-br ${getCardGradient(bonus.type)}`}>
+              <CardHeader className="pb-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-lg mt-1 ${
+                      bonus.type === 'FREE_SPINS' ? 'bg-purple-500/20' :
+                      bonus.type === 'CASHBACK' ? 'bg-green-500/20' :
+                      bonus.type === 'FREE_BET' ? 'bg-orange-500/20' : 'bg-blue-500/20'
+                    }`}>
+                      {getTypeIcon(bonus.type)}
                     </div>
-                  )}
-                </div>
-              )}
-
-              {(bonusAmount > 0 || remainingAmount > 0) && (
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {bonusAmount > 0 && (
-                    <div className="bg-gray-800/50 rounded-lg p-3">
-                      <div className="text-gray-400 text-xs mb-1">Bonus Amount</div>
-                      <div className="font-semibold text-white text-lg">${bonusAmount.toFixed(2)}</div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base text-white flex items-center gap-2 truncate">
+                        {bonus.promoCode?.code || 'Bonus'}
+                      </CardTitle>
+                      <CardDescription className="text-gray-400 truncate">
+                        {bonus.promoCode?.description || 'Bonus offer'}
+                      </CardDescription>
                     </div>
-                  )}
-                  {remainingAmount > 0 && (
-                    <div className="bg-gray-800/50 rounded-lg p-3">
-                      <div className="text-gray-400 text-xs mb-1">Remaining</div>
-                      <div className="font-semibold text-green-400 text-lg">${remainingAmount.toFixed(2)}</div>
+                  </div>
+                  <Badge variant="secondary" className={getStatusColor(bonus.status)}>
+                    {bonus.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {bonus.wageringRequirement > 0 && bonus.status === 'PENDING_WAGERING' && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Wagering Progress</span>
+                      <span className="text-white font-medium">
+                        {formatter.format(completedWagering / requiredWagering)}
+                      </span>
                     </div>
-                  )}
-                </div>
-              )}
+                    <Progress 
+                      value={(completedWagering / requiredWagering) * 100} 
+                      className="h-2 bg-gray-700"
+                    />
+                    <div className="text-xs text-gray-400">
+                      Wager {formatter.format(requiredWagering)}
+                    </div>
+                  </div>
+                )}
 
-              {freeSpinsWinnings > 0 && (
-                <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-3">
-                  <div className="text-gray-400 text-xs mb-1">Free Spins Winnings</div>
-                  <div className="font-semibold text-green-400 text-lg">${freeSpinsWinnings.toFixed(2)}</div>
-                </div>
-              )}
+                {bonus.status === 'PENDING_ACTIVATION' && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <AlertCircle className="h-4 w-4 text-yellow-400" />
+                      <span className="text-yellow-400 text-sm font-medium">Waiting for Deposit</span>
+                    </div>
+                    <p className="text-xs text-yellow-300">
+                      Make a deposit to activate your {bonus.promoCode?.bonusPercentage || 0}% bonus
+                      {bonus.promoCode?.minDepositAmount && toNumber(bonus.promoCode.minDepositAmount) > 0 && 
+                        ` (min. ${formatter.format(toNumber(bonus.promoCode.minDepositAmount))})`
+                      }
+                    </p>
+                  </div>
+                )}
 
-              <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-700/50">
-                <span>Expires: {new Date(bonus.expiresAt).toLocaleDateString()}</span>
-                <span>{bonus.type.replace('_', ' ')}</span>
-              </div>
-            </CardContent>
-          </Card>
+                {freeSpinsCount && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Free Spins</span>
+                      <span className="text-white font-medium">
+                        {bonus.freeSpinsUsed || 0} / {freeSpinsCount} used
+                      </span>
+                    </div>
+                    <Progress 
+                      value={(((bonus.freeSpinsUsed || 0) / freeSpinsCount) * 100)} 
+                      className="h-2 bg-gray-700"
+                    />
+                    {freeSpinsGame && (
+                      <div className="text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded text-center">
+                        Game: {freeSpinsGame}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(bonusAmount > 0 || remainingAmount > 0) && (
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {bonusAmount > 0 && (
+                      <div className="bg-gray-800/50 rounded-lg p-3">
+                        <div className="text-gray-400 text-xs mb-1">Bonus Amount</div>
+                        <div className="font-semibold text-white text-lg">{formatter.format(bonusAmount)}</div>
+                      </div>
+                    )}
+                    {remainingAmount > 0 && (
+                      <div className="bg-gray-800/50 rounded-lg p-3">
+                        <div className="text-gray-400 text-xs mb-1">Remaining</div>
+                        <div className="font-semibold text-green-400 text-lg">{formatter.format(remainingAmount)}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {freeSpinsWinnings > 0 && (
+                  <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-3">
+                    <div className="text-gray-400 text-xs mb-1">Free Spins Winnings</div>
+                    <div className="font-semibold text-green-400 text-lg">{formatter.format(freeSpinsWinnings)}</div>
+                  </div>
+                )}
+
+                {canWithdraw && (
+                  <Button 
+                    onClick={() => handleWithdrawBonus(bonus.id)}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                    size="lg"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Withdraw {formatter.format(remainingAmount)}
+                  </Button>
+                )}
+
+                <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-700/50">
+                  <span>Expires: {new Date(bonus.expiresAt).toLocaleDateString()}</span>
+                  <span>{bonus.type.replace('_', ' ')}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         );
       })}
 

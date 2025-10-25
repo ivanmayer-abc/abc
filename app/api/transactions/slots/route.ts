@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
 import { createTransactionWithCommissions } from '@/lib/commission-processor';
+import { updateBonusWagering } from '@/lib/bonus-wagering';
 
 export async function GET(req: Request) {
   try {
@@ -53,6 +54,10 @@ export async function POST(req: Request) {
       description || `Slot machine ${type}`,
       category
     );
+
+    if (category === 'slots' || description?.includes('spin')) {
+      await updateBonusWagering(amount, user.id);
+    }
 
     return NextResponse.json(transaction);
   } catch (error) {

@@ -26,5 +26,8 @@
   },
   "Common": {
     "altbet": "altbet"
+  },
+  "Deposit": {
+    "button": "Deposit"
   }
 }

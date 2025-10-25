@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
+import { updateBonusWagering } from '@/lib/bonus-wagering'
 
 async function calculateUserBalance(userId: string): Promise<number> {
   const transactions = await db.transaction.findMany({
@@ -101,6 +102,8 @@ export async function POST(req: Request) {
           status: 'PENDING'
         }
       })
+
+      await updateBonusWagering(amount, user.id);
 
       await tx.outcome.update({
         where: { id: outcomeId },

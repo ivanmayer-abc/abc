@@ -5,7 +5,7 @@ import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, bookRoute, publicRou
 
 const intlMiddleware = createIntlMiddleware({
   locales: ['en', 'hi'],
-  defaultLocale: 'en',
+  defaultLocale: 'hi',
   localePrefix: 'as-needed'
 });
 

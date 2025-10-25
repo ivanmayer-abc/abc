@@ -1,8 +1,8 @@
 {
   "Header": {
     "events": "इवेंट्स",
-    "myBets": "मेरे बेट्स",
-    "promos": "प्रोमो",
+    "myBets": "मेरे दांव",
+    "promos": "विशेष ऑफर",
     "games": "गेम्स",
     "roulette": "रूलेट",
     "instant": "इंस्टेंट"
@@ -26,5 +26,8 @@
   },
   "Common": {
     "altbet": "altbet"
+  },
+  "Deposit": {
+    "button": "जमा"
   }
 }

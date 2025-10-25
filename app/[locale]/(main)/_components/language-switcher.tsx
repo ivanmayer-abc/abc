@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const UKFlag = () => (
@@ -69,16 +68,16 @@ const IndiaFlag = () => (
 
 const languages = [
   {
-    value: 'en',
-    label: 'EN',
-    nativeName: 'English',
-    flag: <UKFlag />
-  },
-  {
     value: 'hi',
     label: 'HI',
     nativeName: 'हिन्दी',
     flag: <IndiaFlag />
+  },
+  {
+    value: 'en',
+    label: 'EN',
+    nativeName: 'English',
+    flag: <UKFlag />
   }
 ] as const
 

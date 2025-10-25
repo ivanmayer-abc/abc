@@ -1,13 +1,13 @@
 export const publicRoutes = [
     '/',
-    '/book',
+    '/events',
     '/slots',
     '/roulette',
     '/instant',
     '/new-verification'
 ]
 
-export const bookRoute = '/book'
+export const bookRoute = '/events'
 
 export const authRoutes = [
     '/login',

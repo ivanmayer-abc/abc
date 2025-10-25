@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, XCircle, Gift, AlertCircle, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { formatter } from '@/lib/utils';
 
 interface PromoCodeFormProps {
   hasUsedPromoCode: boolean;
@@ -171,13 +172,17 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
                   {promoDetails.maxBonusAmount > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-green-300">Maximum bonus</span>
-                      <span className="font-semibold text-white">${promoDetails.maxBonusAmount.toFixed(2)}</span>
+                      <span className="font-semibold text-white">
+                          {formatter.format(promoDetails.maxBonusAmount)}
+                      </span>
                     </div>
                   )}
                   {promoDetails.minDepositAmount > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-green-300">Minimum deposit</span>
-                      <span className="font-semibold text-white">${promoDetails.minDepositAmount.toFixed(2)}</span>
+                      <span className="font-semibold text-white">
+                        {formatter.format(promoDetails.minDepositAmount)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
@@ -212,7 +217,9 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               {promoDetails.type === 'FREE_BET' && (
                 <div className="flex justify-between items-center">
                   <span className="text-green-300">Free bet amount</span>
-                  <span className="font-semibold text-white text-lg">${promoDetails.freeBetAmount.toFixed(2)}</span>
+                  <span className="font-semibold text-white text-lg">
+                    {formatter.format(promoDetails.freeBetAmount)}
+                  </span>
                 </div>
               )}
             </div>

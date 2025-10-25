@@ -71,47 +71,62 @@ export async function POST(req: Request) {
         data: { currentUses: { increment: 1 } }
       });
 
-      // Handle different bonus types - FIXED: Include COMBINED type
+      let bonus = null;
+
       if (promoCode.type === 'DEPOSIT_BONUS' || promoCode.type === 'COMBINED') {
-        // For deposit bonuses and combined bonuses, don't create bonus record until deposit
-        return { promoCode, userPromoCode, bonus: null };
+        bonus = await tx.bonus.create({
+          data: {
+            userId: user.id,
+            promoCodeId: promoCode.id,
+            amount: 0,
+            bonusAmount: 0,
+            remainingAmount: 0,
+            wageringRequirement: promoCode.wageringRequirement || 0,
+            totalWagered: 0,
+            withdrawnAmount: 0,
+            type: promoCode.type,
+            status: 'PENDING_ACTIVATION',
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          }
+        });
+      } else {
+        let bonusData: any = {
+          userId: user.id,
+          promoCodeId: promoCode.id,
+          amount: 0,
+          bonusAmount: 0,
+          remainingAmount: 0,
+          wageringRequirement: promoCode.wageringRequirement || 0,
+          totalWagered: 0,
+          withdrawnAmount: 0,
+          type: promoCode.type,
+          status: 'PENDING_WAGERING',
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        };
+
+        switch (promoCode.type) {
+          case 'FREE_SPINS':
+            bonusData = {
+              ...bonusData,
+              freeSpinsCount: promoCode.freeSpinsCount,
+              freeSpinsGame: promoCode.freeSpinsGame,
+              freeSpinsUsed: 0,
+              freeSpinsWinnings: 0
+            };
+            break;
+          case 'CASHBACK':
+            bonusData.cashbackPercentage = promoCode.cashbackPercentage;
+            break;
+          case 'FREE_BET':
+            bonusData.bonusAmount = promoCode.maxBonusAmount?.toNumber() || 0;
+            bonusData.remainingAmount = bonusData.bonusAmount;
+            break;
+        }
+
+        bonus = await tx.bonus.create({
+          data: bonusData
+        });
       }
-
-      // For other bonus types, create the bonus record immediately
-      let bonusData: any = {
-        userId: user.id,
-        promoCodeId: promoCode.id,
-        amount: 0,
-        bonusAmount: 0,
-        remainingAmount: 0,
-        wageringRequirement: promoCode.wageringRequirement || 0,
-        type: promoCode.type,
-        status: 'PENDING_WAGERING',
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      };
-
-      switch (promoCode.type) {
-        case 'FREE_SPINS':
-          bonusData = {
-            ...bonusData,
-            freeSpinsCount: promoCode.freeSpinsCount,
-            freeSpinsGame: promoCode.freeSpinsGame,
-            freeSpinsUsed: 0,
-            freeSpinsWinnings: 0
-          };
-          break;
-        case 'CASHBACK':
-          bonusData.cashbackPercentage = promoCode.cashbackPercentage;
-          break;
-        case 'FREE_BET':
-          bonusData.bonusAmount = promoCode.maxBonusAmount?.toNumber() || 0;
-          bonusData.remainingAmount = bonusData.bonusAmount;
-          break;
-      }
-
-      const bonus = await tx.bonus.create({
-        data: bonusData
-      });
 
       return { promoCode, bonus, userPromoCode };
     });

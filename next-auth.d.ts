@@ -12,6 +12,7 @@ export type ExtendedUser = DefaultSession['user'] & {
     isImageApproved: boolean
     isBlocked: boolean;
     isChatBlocked: boolean;
+    language?: string | null;
 }
 
 declare module 'next-auth' {

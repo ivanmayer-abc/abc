@@ -1,8 +1,8 @@
 import { auth } from "@/auth";
 import { UserButton } from "@/components/auth/user-button";
 import Balance from "@/components/balance";
-import { CirclePlus } from "lucide-react";
 import Link from "next/link";
+import DepositButton from "./deposit-button";
 
 const HeaderAuth = async () => {
     const session = await auth();
@@ -20,10 +20,7 @@ const HeaderAuth = async () => {
                     {isBlocked ? (
                         <></>
                         ) : (
-                        <Link href="/transactions/new/deposit" className="flex items-center font-medium bg-white text-black px-3 py-1 rounded-full text-lg">
-                            <CirclePlus className="mr-2" width={18} height={18} />
-                            Deposit
-                        </Link>
+                        <DepositButton />
                     )}
                     <Balance />
                     <div className="hidden lg:block">

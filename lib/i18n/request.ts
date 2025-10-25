@@ -4,7 +4,7 @@ const locales = ['en', 'hi'];
 
 export default getRequestConfig(async ({ locale }) => {
   if (!locale || !locales.includes(locale)) {
-    locale = 'en';
+    locale = 'hi';
   }
 
   return {
