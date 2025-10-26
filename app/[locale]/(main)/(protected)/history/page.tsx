@@ -1,48 +1,81 @@
 import { currentUser } from '@/lib/auth';
-import { ImageUploadWrapper } from '../_components/image-upload-wrapper';
-import SlotsList from './components/transactions-list';
+import { HistoryPageClient } from './components/history-page-client';
+import { db } from '@/lib/db';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+import { formatter } from '@/lib/utils';
+import { SlotTransactionColumn } from './components/columns';
 
 const SlotTransactionsPage = async () => {
   const user = await currentUser();
   const userImage = user?.image;
   const userId = user?.id;
   const isBlocked = user?.isBlocked ?? false;
+
+  let slotTransactions: SlotTransactionColumn[] = [];
+  
+  if (user?.isImageApproved === "success") {
+    const transactions = await db.transaction.findMany({
+      where: {
+        NOT: [
+          { 
+            OR: [
+              { category: "transaction" },
+              { 
+                description: {
+                  contains: "Commission",
+                  mode: 'insensitive'
+                }
+              }
+            ]
+          }
+        ]
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const timeZone = 'Asia/Kolkata';
+    slotTransactions = transactions.map((item) => {
+      const zonedTime = toZonedTime(item.createdAt, timeZone);
+      return {
+        id: item.id,
+        amount: `${item.type === 'deposit' ? '+' : '-'} ${formatter.format(Number(item.amount))}`,
+        status: item.status,
+        type: item.type,
+        createdAt: format(zonedTime, 'dd MMM yyyy HH:mm'),
+        description: item.description || '',
+        rawAmount: Number(item.amount),
+      };
+    });
+  }
   
   if (!user) {
-    return <div>login to continue</div>
+    return <HistoryPageClient showAuthRequired isBlocked={false} />;
   }
   
   if (user?.isImageApproved === "success") {
     return (
-      <div className="flex flex-col">
-        <SlotsList isBlocked={isBlocked} />
-      </div>
+      <HistoryPageClient 
+        showHistory 
+        isBlocked={isBlocked} 
+        slotTransactions={slotTransactions}
+      />
     );
   }
 
   if (user?.isImageApproved === "pending") {
-    return (
-      <div className="flex flex-col items-center justify-center text-center mt-[-110px] h-screen">
-      <div className="p-6 shadow-md rounded-lg">
-        <h2 className="text-3xl font-semibold mb-4">Please wait for approval</h2>
-        <p className="text-gray-300 text-xl mb-8">
-          It may take from a few minutes up to 24 hours
-        </p>
-      </div>
-    </div>
-    )
+    return <HistoryPageClient showVerificationPending isBlocked={isBlocked} />;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center text-center mt-[-110px] h-screen">
-      <div className="p-6 shadow-md rounded-lg">
-        <h2 className="text-3xl font-semibold mb-4">Upload your passport</h2>
-        <p className="text-gray-300 text-xl mb-8">
-          Take a selfie of you holding your passport and wait for approval to continue
-        </p>
-        <ImageUploadWrapper userImage={userImage} userId={userId} />
-      </div>
-    </div>
+    <HistoryPageClient 
+      showVerificationRequired 
+      userImage={userImage}
+      userId={userId}
+      isBlocked={isBlocked}
+    />
   );
 };
 

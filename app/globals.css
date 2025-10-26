@@ -126,7 +126,7 @@ body {
   justify-content: flex-end;
   overflow-y: auto;
   padding-bottom: 20px;
-  min-height: calc(100% - 60px);
+  min-height: calc(100vh - 60px);
 }
 
 input::-webkit-outer-spin-button,

@@ -6,17 +6,30 @@ import { Calendar, Users } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface BookHeaderProps {
   book: Book & { isLive: boolean; isUpcoming: boolean }
 }
 
 export default function BookHeader({ book }: BookHeaderProps) {
+  const t = useTranslations('Book')
+  const locale = useLocale()
   const acceptingBets = book.isUpcoming
   const hasTeams = book.teams && book.teams.length > 0
 
   const bookStatus = book.displayStatus || (book.isLive ? 'LIVE' : 'UPCOMING')
   const capitalizedStatus = bookStatus.charAt(0).toUpperCase() + bookStatus.slice(1).toLowerCase()
+
+  const formattedDate = new Date(book.date).toLocaleString(locale === 'hi' ? 'hi-IN' : 'en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
 
   return (
     <>
@@ -24,7 +37,7 @@ export default function BookHeader({ book }: BookHeaderProps) {
         <Link href="/book" className="flex-shrink-0">
           <Button variant="outline" size="sm" className="text-xs sm:text-sm">
             <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            Back to books
+            {t('backToBooks')}
           </Button>
         </Link>
       </div>
@@ -47,7 +60,7 @@ export default function BookHeader({ book }: BookHeaderProps) {
               </Badge>
               {!acceptingBets && (
                 <Badge variant="outline" className="text-xs sm:text-sm bg-destructive/20 text-destructive">
-                  Bets Closed
+                  {t('betsClosed')}
                 </Badge>
               )}
             </div>
@@ -56,15 +69,7 @@ export default function BookHeader({ book }: BookHeaderProps) {
           <div className="flex items-center gap-2 text-muted-foreground mb-4 sm:mb-6">
             <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             <span className="text-xs sm:text-sm break-words">
-              {new Date(book.date).toLocaleString('en-IN', {
-                  timeZone: 'Asia/Kolkata',
-                  year: 'numeric',
-                  month: 'long',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                })}
+              {formattedDate}
             </span>
           </div>
 
@@ -74,7 +79,7 @@ export default function BookHeader({ book }: BookHeaderProps) {
             <div className="mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                Teams
+                {t('teams')}
               </h2>
               
               <div className="block sm:hidden space-y-4">

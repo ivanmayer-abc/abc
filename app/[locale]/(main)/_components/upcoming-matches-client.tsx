@@ -10,6 +10,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { ArrowRight } from 'lucide-react'
 import BettingSlipWrapper from '@/components/bookmaking/betting-slip-wrapper'
 import { Book, Event, Outcome } from '@/app/types/bookmaking'
+import { useTranslations } from 'next-intl'
 
 interface SelectedOutcome {
   id: string
@@ -28,6 +29,7 @@ export default function UpcomingMatchesClient({ books = [] }: UpcomingMatchesCli
   const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
+  const t = useTranslations('Home')
 
   const handleOutcomeClick = (outcome: Outcome, event: Event, book: Book) => {
     if (!session) {
@@ -39,7 +41,7 @@ export default function UpcomingMatchesClient({ books = [] }: UpcomingMatchesCli
     const bookDate = new Date(book.date)
     
     if (now >= bookDate) {
-      alert('Bets are no longer accepted for this book as the event has already started.')
+      alert(t('betsClosed'))
       return
     }
 
@@ -110,6 +112,7 @@ interface MatchCardProps {
 }
 
 function MatchCard({ book, onOutcomeClick, isUserLoggedIn }: MatchCardProps) {
+  const t = useTranslations('Home')
   const mainTeams = book.teams?.slice(0, 2) || []
   const firstEvent = book.events?.[0]
   const displayCategory = book.category?.charAt(0).toUpperCase() + book.category?.slice(1).toLowerCase() || ''
@@ -156,7 +159,7 @@ function MatchCard({ book, onOutcomeClick, isUserLoggedIn }: MatchCardProps) {
             ))}
             {book.teams && book.teams.length > 2 && (
               <Badge variant="outline" className="text-xs bg-muted w-fit px-2 py-0">
-                +{book.teams.length - 2} more
+                {t('moreTeams', { count: book.teams.length - 2 })}
               </Badge>
             )}
           </div>
@@ -219,7 +222,7 @@ function MatchCard({ book, onOutcomeClick, isUserLoggedIn }: MatchCardProps) {
               </div>
               {!isAcceptingBets && (
                 <div className="text-xs text-muted-foreground text-center">
-                  Bets closed - Event started
+                  {t('betsClosed')}
                 </div>
               )}
             </div>
@@ -227,7 +230,7 @@ function MatchCard({ book, onOutcomeClick, isUserLoggedIn }: MatchCardProps) {
 
           <Link href={`/book/${book.id}`} className="w-full mt-3">
             <Button size="sm" variant="outline" className="w-full text-xs h-8">
-              View all options
+              {t('viewAllOptions')}
               <ArrowRight className="h-3 w-3 ml-1" />
             </Button>
           </Link>

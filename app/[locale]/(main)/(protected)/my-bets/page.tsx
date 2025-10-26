@@ -26,6 +26,7 @@ import { formatter } from '@/lib/utils'
 import Link from 'next/link'
 import { useBalanceContext } from '@/contexts/balance-context'
 import { toast } from 'sonner'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface UserBet {
   id: string
@@ -64,6 +65,10 @@ export default function MyBetsPage() {
   const [cancellingBets, setCancellingBets] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const { refreshBalance } = useBalanceContext();
+  const t = useTranslations('MyBets')
+  const tBook = useTranslations('Book')
+  const tCommon = useTranslations('Common')
+  const locale = useLocale()
 
   useEffect(() => {
     fetchUserBets()
@@ -96,14 +101,14 @@ export default function MyBetsPage() {
         if (response.ok) {
           await refreshBalance();
           fetchUserBets()
-          resolve('Bet cancelled successfully')
+          resolve(t('betCancelled'))
         } else {
           const errorData = await response.json()
-          reject(errorData.message || 'Failed to cancel bet')
+          reject(errorData.message || t('failedToCancelBet'))
         }
       } catch (error) {
         console.error('Error cancelling bet:', error)
-        reject('Error cancelling bet')
+        reject(t('errorCancellingBet'))
       } finally {
         setCancellingBets(prev => {
           const newSet = new Set(prev);
@@ -114,7 +119,7 @@ export default function MyBetsPage() {
     })
 
     toast.promise(cancelPromise, {
-      loading: 'Cancelling bet...',
+      loading: tBook('cancelling'),
       success: (message) => message as string,
       error: (error) => error as string,
     })
@@ -152,6 +157,18 @@ export default function MyBetsPage() {
 
   const betStats = calculateBetStats()
 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleString(locale === 'hi' ? 'hi-IN' : 'en-IN', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'long',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+  }
+
   if (loading) {
     return <LoadingSkeleton />
   }
@@ -162,19 +179,19 @@ export default function MyBetsPage() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold">{betStats.totalBets}</div>
-            <div className="text-sm text-muted-foreground">Total Bets</div>
+            <div className="text-sm text-muted-foreground">{t('totalBets')}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">{formatter.format(betStats.totalWon)}</div>
-            <div className="text-sm text-muted-foreground">Total Won</div>
+            <div className="text-sm text-muted-foreground">{t('totalWon')}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{formatter.format(betStats.totalPotentialWin)}</div>
-            <div className="text-sm text-muted-foreground">Potential Win</div>
+            <div className="text-sm text-muted-foreground">{t('potentialWin')}</div>
           </CardContent>
         </Card>
       </div>
@@ -188,7 +205,7 @@ export default function MyBetsPage() {
             setCurrentPage(1)
           }}
         >
-          All Bets
+          {t('allBets')}
         </Button>
         <Button
           variant={filter === 'won' ? 'default' : 'outline'}
@@ -198,7 +215,7 @@ export default function MyBetsPage() {
             setCurrentPage(1)
           }}
         >
-          Won
+          {t('won')}
         </Button>
         <Button
           variant={filter === 'pending' ? 'default' : 'outline'}
@@ -208,26 +225,26 @@ export default function MyBetsPage() {
             setCurrentPage(1)
           }}
         >
-          Pending
+          {t('pending')}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>
-            {filter === 'all' ? 'All Bets' :
-             filter === 'pending' ? 'Pending Bets' :
-             filter === 'won' ? 'Won Bets' : 'Lost Bets'}
+            {filter === 'all' ? t('allBets') :
+             filter === 'pending' ? t('pendingBets') :
+             filter === 'won' ? t('wonBets') : t('lostBets')}
           </CardTitle>
           <CardDescription>
-            Showing {currentBets.length} of {filteredBets.length} {filteredBets.length === 1 ? 'bet' : 'bets'}
+            {t('showingBets', { current: currentBets.length, total: filteredBets.length })}
           </CardDescription>
         </CardHeader>
         <CardContent className='p-1 sm:p-6'>
           {filteredBets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No bets found for the selected filter.</p>
+              <p>{t('noBetsFound')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -235,14 +252,14 @@ export default function MyBetsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className='pl-4'>Event</TableHead>
-                      <TableHead>Outcome</TableHead>
-                      <TableHead>Stake</TableHead>
-                      <TableHead>Odds</TableHead>
-                      <TableHead>Potential</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
+                      <TableHead className='pl-4'>{tBook('eventColumn')}</TableHead>
+                      <TableHead>{tBook('outcomeColumn')}</TableHead>
+                      <TableHead>{tBook('stakeColumn')}</TableHead>
+                      <TableHead>{t('odds')}</TableHead>
+                      <TableHead>{tBook('potentialColumn')}</TableHead>
+                      <TableHead>{tBook('statusColumn')}</TableHead>
+                      <TableHead>{tBook('dateColumn')}</TableHead>
+                      <TableHead className="text-center">{tBook('actionsColumn')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -301,25 +318,12 @@ export default function MyBetsPage() {
                               bet.status === 'WON' ? 'default' :
                               bet.status === 'LOST' ? 'destructive' : 'outline'
                             }>
-                              {bet.status.toLowerCase()}
+                              {t('status.' + bet.status.toLowerCase())}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="text-sm text-muted-foreground min-w-[45px]">
-                              {new Date(bet.book.date).toLocaleString('en-IN', {
-                                timeZone: 'Asia/Kolkata',
-                                year: 'numeric',
-                                month: 'short',
-                                day: '2-digit',
-                              })}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(bet.book.date).toLocaleTimeString('en-IN', {
-                                timeZone: 'Asia/Kolkata',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                              })}
+                              {formatDate(bet.book.date)}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
@@ -335,12 +339,12 @@ export default function MyBetsPage() {
                                   {cancellingBets.has(bet.id) ? (
                                     <>
                                       <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
-                                      Cancelling...
+                                      {tBook('cancelling')}
                                     </>
                                   ) : (
                                     <>
                                       <X className="h-4 w-4 mr-1" />
-                                      Cancel
+                                      {tBook('cancel')}
                                     </>
                                   )}
                                 </Button>
@@ -411,6 +415,8 @@ export default function MyBetsPage() {
 }
 
 function LoadingSkeleton() {
+  const t = useTranslations('MyBets')
+  
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center gap-4">

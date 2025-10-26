@@ -22,6 +22,7 @@ import { ExitIcon } from '@radix-ui/react-icons'
 import { reset } from '@/actions/reset'
 import { SettingsSchema } from '@/schemas'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 const SettingsPage = () => {
     const user = useCurrentUser()
@@ -33,6 +34,8 @@ const SettingsPage = () => {
     const [lastResetTime, setLastResetTime] = useState<number | null>(null)
     const [isCooldown, setIsCooldown] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+
+    const t = useTranslations('Settings')
 
     const formatBirthDate = (date: Date | undefined): string => {
         if (!date) return ''
@@ -67,19 +70,19 @@ const SettingsPage = () => {
 
     const handleForgotPassword = () => {
         if (!user?.email) {
-            setError("User email is missing.");
+            setError(t('errors.missingEmail'));
             return;
         }
 
         const email = user.email as string;
         if (typeof email !== 'string') {
-            setError("Invalid email address.");
+            setError(t('errors.invalidEmail'));
             return;
         }
 
         const currentTime = Date.now()
         if (lastResetTime && currentTime - lastResetTime < 180000) {
-            setError("You can only request a password reset once every 3 minutes.");
+            setError(t('errors.resetCooldown'));
             return;
         }
 
@@ -89,13 +92,13 @@ const SettingsPage = () => {
                     if (data?.error) {
                         setError(data.error);
                     } else {
-                        setSuccess("Password reset email sent.");
+                        setSuccess(t('success.resetEmailSent'));
                         setLastResetTime(currentTime)
                         setIsCooldown(true)
                     }
                 })
                 .catch((err) => {
-                    setError("Failed to send reset email.");
+                    setError(t('errors.resetFailed'));
                 })
         })
     }
@@ -123,7 +126,7 @@ const SettingsPage = () => {
                         setSuccess(data.success)
                     }
                 })
-                .catch(() => setError('Something went wrong!'))
+                .catch(() => setError(t('errors.generic')))
         })
     }
 
@@ -164,11 +167,11 @@ const SettingsPage = () => {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>First name</FormLabel>
+                                    <FormLabel>{t('form.firstName')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="First name (as specified in your Aadhaar Card)"
+                                            placeholder={t('placeholders.firstName')}
                                             disabled={isPending}
                                         />
                                     </FormControl>
@@ -180,11 +183,11 @@ const SettingsPage = () => {
                             name="surname"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Last name</FormLabel>
+                                    <FormLabel>{t('form.lastName')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Last name (as specified in your Aadhaar Card)"
+                                            placeholder={t('placeholders.lastName')}
                                             disabled={isPending}
                                         />
                                     </FormControl>
@@ -196,20 +199,20 @@ const SettingsPage = () => {
                             name="birth"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Date of birth</FormLabel>
+                                    <FormLabel>{t('form.birthDate')}</FormLabel>
                                     <FormControl>
                                         <InputMask
                                             mask="99.99.9999"
                                             value={field.value || ''}
                                             onChange={field.onChange}
                                             disabled={isPending}
-                                            placeholder="DD.MM.YYYY"
+                                            placeholder={t('placeholders.birthDate')}
                                             maskChar={null}
                                         >
                                             {(inputProps: any) => (
                                                 <Input
                                                     {...inputProps}
-                                                    placeholder="DD.MM.YYYY"
+                                                    placeholder={t('placeholders.birthDate')}
                                                     className="font-mono tracking-wider"
                                                 />
                                             )}
@@ -224,11 +227,11 @@ const SettingsPage = () => {
                             name="country"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Country</FormLabel>
+                                    <FormLabel>{t('form.country')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Enter your country"
+                                            placeholder={t('placeholders.country')}
                                             disabled={true}
                                         />
                                     </FormControl>
@@ -240,11 +243,11 @@ const SettingsPage = () => {
                             name="city"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>City</FormLabel>
+                                    <FormLabel>{t('form.city')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Enter your city"
+                                            placeholder={t('placeholders.city')}
                                             disabled={isPending}
                                         />
                                     </FormControl>
@@ -258,11 +261,11 @@ const SettingsPage = () => {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Email</FormLabel>
+                                            <FormLabel>{t('form.email')}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
-                                                    placeholder="my.email@example.com"
+                                                    placeholder={t('placeholders.email')}
                                                     disabled={isPending}
                                                     type="email"
                                                 />
@@ -280,7 +283,7 @@ const SettingsPage = () => {
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                                         <div className="space-y-0.5">
-                                            <FormLabel>Two-Step Authentication</FormLabel>
+                                            <FormLabel>{t('form.twoFactor')}</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Switch
@@ -301,7 +304,7 @@ const SettingsPage = () => {
                         type="submit"
                         size="lg"
                     >
-                        Save
+                        {t('buttons.save')}
                     </Button>
                 </form>
             </Form>
@@ -311,7 +314,7 @@ const SettingsPage = () => {
                     onClick={handleForgotPassword}
                     disabled={isPending || isCooldown}
                 >
-                    Forgot password?
+                    {t('buttons.forgotPassword')}
                 </Button>
                 <LogoutButton>
                     <Button
@@ -319,7 +322,7 @@ const SettingsPage = () => {
                         className="flex"
                     >
                         <ExitIcon className="h-4 w-4 mr-2" />
-                        Logout
+                        {t('buttons.logout')}
                     </Button>
                 </LogoutButton>
             </div>

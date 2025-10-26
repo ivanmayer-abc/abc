@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Clock } from 'lucide-react'
 import UpcomingMatchesClient from './upcoming-matches-client'
 import { Book as BookType } from '@/app/types/bookmaking'
+import { getTranslations } from 'next-intl/server'
 
 async function getUpcomingMatches(): Promise<BookType[]> {
   try {
@@ -114,7 +115,10 @@ async function getUpcomingMatches(): Promise<BookType[]> {
 }
 
 export default async function UpcomingMatches() {
-  const upcomingMatches = await getUpcomingMatches()
+  const [upcomingMatches, t] = await Promise.all([
+    getUpcomingMatches(),
+    getTranslations('Home')
+  ])
 
   if (!upcomingMatches || upcomingMatches.length === 0) {
     return (
@@ -123,13 +127,13 @@ export default async function UpcomingMatches() {
           <div className="p-3 bg-muted rounded-full mb-4">
             <Clock className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">No upcoming matches</h3>
+          <h3 className="text-xl font-semibold mb-2">{t('noUpcomingMatches')}</h3>
           <p className="text-muted-foreground mb-6 max-w-md">
-            There are no upcoming matches scheduled at the moment. Check back later for new events!
+            {t('noMatchesDescription')}
           </p>
           <Link href="/book">
             <Button variant="outline" className="flex items-center gap-2">
-              Browse all events
+              {t('browseAllEvents')}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -142,12 +146,12 @@ export default async function UpcomingMatches() {
     <div className="mt-5 space-y-2">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold tracking-tight">Upcoming matches</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t('upcomingMatches')}</h2>
         </div>
         
         <Link href="/book" className="w-full sm:w-auto">
           <Button variant="outline" className="flex items-center gap-2 w-full sm:w-auto justify-center">
-            View all
+            {t('viewAll')}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>

@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import BettingSlipWrapper from '@/components/bookmaking/betting-slip-wrapper'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 interface EventsTabProps {
   book: Book & { isLive: boolean; isUpcoming: boolean }
@@ -31,6 +32,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
   const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
+  const t = useTranslations('Book')
 
   const handleOutcomeClick = (outcome: any, event: any) => {
     if (!session) {
@@ -39,7 +41,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
     }
 
     if (!book.isUpcoming) {
-      toast.error('Bets are no longer accepted for this book as the event has already started.')
+      toast.error(t('betsNoLongerAccepted'))
       return
     }
 
@@ -101,15 +103,15 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Events & Betting Options</CardTitle>
+          <CardTitle>{t('eventsAndBettingOptions')}</CardTitle>
           <CardDescription>
             {book.isUpcoming 
               ? session 
-                ? 'Choose an event and place your bet on the desired outcome'
-                : 'Choose an event to place your bet (Login required)'
+                ? t('chooseEventDescription')
+                : t('chooseEventLogin')
               : book.isLive 
-                ? 'Event is LIVE - Bets are no longer accepted'
-                : 'Bets are no longer accepted for this book as the event has started'
+                ? t('eventLive')
+                : t('betsNoLongerAccepted')
             }
           </CardDescription>
         </CardHeader>
@@ -117,7 +119,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
           {eventsWithUserStake.length === 0 ? (
             <div className="text-center py-6 sm:py-8 text-muted-foreground">
               <Trophy className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-              <p className="text-sm sm:text-base">No active events in this book at the moment.</p>
+              <p className="text-sm sm:text-base">{t('noActiveEvents')}</p>
             </div>
           ) : (
             eventsWithUserStake.map((event, index) => (
@@ -189,7 +191,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
                         </div>
                         {outcome.userStake > 0 && (
                           <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                            Your Stake: {formatter.format(outcome.userStake)}
+                            {t('yourStake')}: {formatter.format(outcome.userStake)}
                           </div>
                         )}
                       </Button>
@@ -197,7 +199,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
                   </div>
                   {!book.isUpcoming && (
                     <div className="text-center text-xs sm:text-sm text-muted-foreground italic">
-                      {book.isLive ? 'Event is LIVE - Bets are closed' : 'Bets are no longer accepted for this event'}
+                      {book.isLive ? t('eventLiveBetsClosed') : t('betsNoLongerAcceptedEvent')}
                     </div>
                   )}
                 </div>

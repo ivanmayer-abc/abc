@@ -9,6 +9,7 @@ import { Gift, RotateCcw, Coins, Sparkles, ArrowRight, Crown, Zap, AlertCircle, 
 import { useRouter } from 'next/navigation';
 import { formatter } from '@/lib/utils';
 import { BonusWithdrawal } from './bonus-withdrawal';
+import { useTranslations } from 'next-intl';
 
 interface Bonus {
   id: string;
@@ -64,6 +65,7 @@ export function BonusTracker() {
     activeCount: 0
   });
   const router = useRouter();
+  const t = useTranslations('BonusTracker');
 
   useEffect(() => {
     fetchBonuses();
@@ -151,6 +153,16 @@ export function BonusTracker() {
     }
   };
 
+  const getStatusText = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'PENDING_WAGERING': t('status.pendingWagering'),
+      'COMPLETED': t('status.completed'),
+      'FORFEITED': t('status.forfeited'),
+      'PENDING_ACTIVATION': t('status.pendingActivation')
+    };
+    return statusMap[status] || status.replace('_', ' ');
+  };
+
   const realTotalRemaining = bonuses.reduce((total, bonus) => {
     const remaining = toNumber(bonus.remainingAmount);
     const winnings = toNumber(bonus.freeSpinsWinnings);
@@ -178,9 +190,12 @@ export function BonusTracker() {
                 <Crown className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-lg text-white">Bonus summary</CardTitle>
+                <CardTitle className="text-lg text-white">{t('summary.title')}</CardTitle>
                 <CardDescription className="text-gray-400">
-                  {activeBonuses.length} active • {pendingActivationBonuses.length} pending
+                  {t('summary.stats', { 
+                    active: activeBonuses.length, 
+                    pending: pendingActivationBonuses.length 
+                  })}
                 </CardDescription>
               </div>
             </div>
@@ -188,7 +203,7 @@ export function BonusTracker() {
               <div className="text-2xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">
                 {formatter.format(realTotalRemaining)}
               </div>
-              <div className="text-xs text-gray-400">Available balance</div>
+              <div className="text-xs text-gray-400">{t('summary.availableBalance')}</div>
             </div>
           </div>
         </CardHeader>
@@ -201,7 +216,7 @@ export function BonusTracker() {
               size="lg"
             >
               <Zap className="h-4 w-4 mr-2" />
-              Activate {pendingActivationBonuses.length} bonus{pendingActivationBonuses.length > 1 ? 'es' : ''} with deposit
+              {t('buttons.activateWithDeposit', { count: pendingActivationBonuses.length })}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
@@ -231,7 +246,7 @@ export function BonusTracker() {
                   </div>
                 </div>
                 <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                  Ready to activate
+                  {t('status.readyToActivate')}
                 </Badge>
               </div>
             </CardHeader>
@@ -241,35 +256,35 @@ export function BonusTracker() {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Zap className="h-6 w-6 text-white" />
                 </div>
-                <h4 className="font-semibold text-white mb-2 text-lg">Deposit bonus ready!</h4>
+                <h4 className="font-semibold text-white mb-2 text-lg">{t('activation.depositBonusReady')}</h4>
                 <p className="text-sm text-blue-300 mb-4 leading-relaxed">
-                  Get <span className="font-bold text-white">{promoCode?.bonusPercentage}%</span> bonus on your deposit
+                  {t('activation.getBonus', { percentage: promoCode?.bonusPercentage || 0 })}
                   {maxBonusAmount > 0 && (
-                    <span className="block">up to <span className="font-bold text-white">{formatter.format(maxBonusAmount)}</span></span>
+                    <span className="block">{t('activation.upTo', { amount: formatter.format(maxBonusAmount) })}</span>
                   )}
                 </p>
                 <Button 
                   onClick={handleActivateBonus}
                   size="lg"
                 >
-                  Deposit to activate
+                  {t('buttons.depositToActivate')}
                 </Button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="bg-gray-800/50 rounded-lg p-3">
-                  <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Bonus Rate</div>
+                  <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">{t('labels.bonusRate')}</div>
                   <div className="font-semibold text-white text-lg">{promoCode?.bonusPercentage}%</div>
                 </div>
                 {maxBonusAmount > 0 && (
                   <div className="bg-gray-800/50 rounded-lg p-3">
-                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Max Bonus</div>
+                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">{t('labels.maxBonus')}</div>
                     <div className="font-semibold text-white text-lg">{formatter.format(maxBonusAmount)}</div>
                   </div>
                 )}
                 {minDepositAmount > 0 && (
                   <div className="bg-gray-800/50 rounded-lg p-3 sm:col-span-2">
-                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Minimum Deposit</div>
+                    <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">{t('labels.minDeposit')}</div>
                     <div className="font-semibold text-white">{formatter.format(minDepositAmount)}</div>
                   </div>
                 )}
@@ -314,15 +329,15 @@ export function BonusTracker() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-base text-white flex items-center gap-2 truncate">
-                        {bonus.promoCode?.code || 'Bonus'}
+                        {bonus.promoCode?.code || t('labels.bonus')}
                       </CardTitle>
                       <CardDescription className="text-gray-400 truncate">
-                        {bonus.promoCode?.description || 'Bonus offer'}
+                        {bonus.promoCode?.description || t('labels.bonusOffer')}
                       </CardDescription>
                     </div>
                   </div>
                   <Badge variant="secondary" className={getStatusColor(bonus.status)}>
-                    {bonus.status.replace('_', ' ')}
+                    {getStatusText(bonus.status)}
                   </Badge>
                 </div>
               </CardHeader>
@@ -331,7 +346,7 @@ export function BonusTracker() {
                 {bonus.wageringRequirement > 0 && bonus.status === 'PENDING_WAGERING' && (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-400">Wagering Progress</span>
+                      <span className="text-gray-400">{t('progress.wagering')}</span>
                       <span className="text-white font-medium">
                         {formatter.format(completedWagering / requiredWagering)}
                       </span>
@@ -341,7 +356,7 @@ export function BonusTracker() {
                       className="h-2 bg-gray-700"
                     />
                     <div className="text-xs text-gray-400">
-                      Wager {formatter.format(requiredWagering)}
+                      {t('progress.wagerAmount', { amount: formatter.format(requiredWagering) })}
                     </div>
                   </div>
                 )}
@@ -350,13 +365,14 @@ export function BonusTracker() {
                   <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <AlertCircle className="h-4 w-4 text-yellow-400" />
-                      <span className="text-yellow-400 text-sm font-medium">Waiting for Deposit</span>
+                      <span className="text-yellow-400 text-sm font-medium">{t('status.waitingForDeposit')}</span>
                     </div>
                     <p className="text-xs text-yellow-300">
-                      Make a deposit to activate your {bonus.promoCode?.bonusPercentage || 0}% bonus
-                      {bonus.promoCode?.minDepositAmount && toNumber(bonus.promoCode.minDepositAmount) > 0 && 
-                        ` (min. ${formatter.format(toNumber(bonus.promoCode.minDepositAmount))})`
-                      }
+                      {t('activation.makeDeposit', { 
+                        percentage: bonus.promoCode?.bonusPercentage || 0,
+                        amount: bonus.promoCode?.minDepositAmount && toNumber(bonus.promoCode.minDepositAmount) > 0 ? 
+                          ` (${t('labels.min')} ${formatter.format(toNumber(bonus.promoCode.minDepositAmount))})` : ''
+                      })}
                     </p>
                   </div>
                 )}
@@ -364,9 +380,12 @@ export function BonusTracker() {
                 {freeSpinsCount && (
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-400">Free Spins</span>
+                      <span className="text-gray-400">{t('labels.freeSpins')}</span>
                       <span className="text-white font-medium">
-                        {bonus.freeSpinsUsed || 0} / {freeSpinsCount} used
+                        {t('progress.spinsUsed', { 
+                          used: bonus.freeSpinsUsed || 0, 
+                          total: freeSpinsCount 
+                        })}
                       </span>
                     </div>
                     <Progress 
@@ -375,7 +394,7 @@ export function BonusTracker() {
                     />
                     {freeSpinsGame && (
                       <div className="text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded text-center">
-                        Game: {freeSpinsGame}
+                        {t('labels.game')}: {freeSpinsGame}
                       </div>
                     )}
                   </div>
@@ -385,13 +404,13 @@ export function BonusTracker() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {bonusAmount > 0 && (
                       <div className="bg-gray-800/50 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs mb-1">Bonus Amount</div>
+                        <div className="text-gray-400 text-xs mb-1">{t('labels.bonusAmount')}</div>
                         <div className="font-semibold text-white text-lg">{formatter.format(bonusAmount)}</div>
                       </div>
                     )}
                     {remainingAmount > 0 && (
                       <div className="bg-gray-800/50 rounded-lg p-3">
-                        <div className="text-gray-400 text-xs mb-1">Remaining</div>
+                        <div className="text-gray-400 text-xs mb-1">{t('labels.remaining')}</div>
                         <div className="font-semibold text-green-400 text-lg">{formatter.format(remainingAmount)}</div>
                       </div>
                     )}
@@ -400,7 +419,7 @@ export function BonusTracker() {
 
                 {freeSpinsWinnings > 0 && (
                   <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-lg p-3">
-                    <div className="text-gray-400 text-xs mb-1">Free Spins Winnings</div>
+                    <div className="text-gray-400 text-xs mb-1">{t('labels.freeSpinsWinnings')}</div>
                     <div className="font-semibold text-green-400 text-lg">{formatter.format(freeSpinsWinnings)}</div>
                   </div>
                 )}
@@ -412,12 +431,12 @@ export function BonusTracker() {
                     size="lg"
                   >
                     <Wallet className="h-4 w-4 mr-2" />
-                    Withdraw {formatter.format(remainingAmount)}
+                    {t('buttons.withdraw', { amount: formatter.format(remainingAmount) })}
                   </Button>
                 )}
 
                 <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-700/50">
-                  <span>Expires: {new Date(bonus.expiresAt).toLocaleDateString()}</span>
+                  <span>{t('labels.expires')}: {new Date(bonus.expiresAt).toLocaleDateString()}</span>
                   <span>{bonus.type.replace('_', ' ')}</span>
                 </div>
               </CardContent>
@@ -432,9 +451,9 @@ export function BonusTracker() {
             <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
               <Gift className="h-8 w-8 text-gray-500" />
             </div>
-            <h3 className="text-white font-semibold text-lg mb-2">No Active Bonuses</h3>
+            <h3 className="text-white font-semibold text-lg mb-2">{t('emptyState.title')}</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Apply a promo code to unlock exclusive rewards
+              {t('emptyState.description')}
             </p>
             <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
           </CardContent>

@@ -7,11 +7,8 @@ import { Separator } from '@/components/ui/separator'
 import { 
   CreditCard, 
   History, 
-  BarChart3, 
   HelpCircle, 
   Settings,
-  Shield,
-  LogOut,
   Copy,
   Check,
   Mail,
@@ -22,7 +19,8 @@ import {
   Banknote,
   ArrowBigUp,
   ArrowBigDown,
-  Gift
+  Gift,
+  Ticket
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -30,6 +28,7 @@ import { useBalanceContext } from '@/contexts/balance-context'
 import { Skeleton } from '@/components/ui/skeleton'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface ProfileClientProps {
   user: {
@@ -48,46 +47,47 @@ interface ProfileClientProps {
 const ProfileClient = ({ user }: ProfileClientProps) => {
   const [copied, setCopied] = useState(false)
   const { formattedBalance, isLoading: balanceLoading } = useBalanceContext()
+  const t = useTranslations('Profile')
 
   const menuItems = [
     {
-      title: 'Promos',
-      description: 'Enter promo code and get bonuses',
+      title: t('promos'),
+      description: t('promosDescription'),
       icon: Gift,
       href: '/promo',
       color: 'text-red-600'
     },
     {
-      title: 'Transactions',
-      description: 'View your deposit and withdrawal history',
+      title: t('transactions'),
+      description: t('transactionsDescription'),
       icon: CreditCard,
       href: '/transactions',
       color: 'text-blue-600'
     },
     {
-      title: 'Betting history',
-      description: 'See all your past bets and results',
+      title: t('bettingHistory'),
+      description: t('bettingHistoryDescription'),
       icon: History,
       href: '/history',
       color: 'text-green-600'
     },
     {
-      title: 'My bets',
-      description: 'Track your active and settled bets',
-      icon: BarChart3,
+      title: t('myBets'),
+      description: t('myBetsDescription'),
+      icon: Ticket,
       href: '/my-bets',
       color: 'text-purple-600'
     },
     {
-      title: 'Support',
-      description: 'Get help and contact customer support',
+      title: t('support'),
+      description: t('supportDescription'),
       icon: HelpCircle,
       href: '/support',
       color: 'text-orange-600'
     },
     {
-      title: 'Settings',
-      description: 'Manage your account preferences',
+      title: t('settings'),
+      description: t('settingsDescription'),
       icon: Settings,
       href: '/settings',
       color: 'text-gray-600'
@@ -98,10 +98,10 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
-      toast.success('User ID copied to clipboard')
+      toast.success(t('userIdCopied'))
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      toast.error('Failed to copy to clipboard')
+      toast.error(t('copyFailed'))
     }
   }
 
@@ -110,7 +110,7 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
       await signOut({ callbackUrl: '/' })
     } catch (error) {
       console.error('Error signing out:', error)
-      toast.error('Failed to sign out')
+      toast.error(t('signOutFailed'))
     }
   }
 
@@ -125,7 +125,7 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
                     <User className="h-10 w-10" />
                 </div>
                 <CardTitle className="text-xl">
-                  {user.name || 'User'}
+                  {user.name || t('user')}
                 </CardTitle>
                 <CardDescription className="text-gray-300 flex items-center justify-center gap-2">
                   <Mail className="h-4 w-4" />
@@ -135,7 +135,7 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300">
-                    User ID
+                    {t('userId')}
                   </label>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 bg-gray-800 px-3 py-2 rounded-md text-sm font-mono text-gray-200 truncate">
@@ -158,7 +158,7 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300">
-                    Account balance
+                    {t('accountBalance')}
                   </label>
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                     {balanceLoading ? (
@@ -169,7 +169,7 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
                           {formattedBalance}
                         </div>
                         <div className="text-sm text-green-600 dark:text-green-500 mt-1">
-                          Available to bet or withdraw
+                          {t('availableBalance')}
                         </div>
                       </>
                     )}
@@ -180,57 +180,57 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
                     <Button className="w-full justify-start" variant="default" asChild>
                         <Link href="/deposit" className='flex justify-center'>
                             <ArrowBigUp className="h-5 w-5 mr-1" />
-                            Deposit
+                            {t('deposit')}
                         </Link>
                     </Button>
                     <Button className="w-full justify-start" variant="outline" asChild>
                         <Link href="/withdraw" className='flex justify-center'>
                             <ArrowBigDown className="h-5 w-5 mr-1" />
-                            Withdraw
+                            {t('withdraw')}
                         </Link>
                     </Button>
                 </div>
 
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">2FA status</span>
+                    <span className="text-slate-600 dark:text-slate-400">{t('2faStatus')}</span>
                     <Badge variant={user.isTwoFactorEnabled ? "default" : "secondary"}>
                       {user.isTwoFactorEnabled ? (
                         <>
                           <ShieldCheck className="h-3 w-3 mr-1" />
-                          Enabled
+                          {t('enabled')}
                         </>
                       ) : (
                         <>
                           <ShieldOff className="h-3 w-3 mr-1" />
-                          Disabled
+                          {t('disabled')}
                         </>
                       )}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">Account status</span>
+                    <span className="text-slate-600 dark:text-slate-400">{t('accountStatus')}</span>
                     <Badge variant={user.isBlocked ? "destructive" : "default"}>
                       {user.isBlocked ? (
                         <>
                           <Ban className="h-3 w-3 mr-1" />
-                          Blocked
+                          {t('blocked')}
                         </>
                       ) : (
-                        'Active'
+                        t('active')
                       )}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">Chat status</span>
+                    <span className="text-slate-600 dark:text-slate-400">{t('chatStatus')}</span>
                     <Badge variant={user.isChatBlocked ? "destructive" : "secondary"}>
                       {user.isChatBlocked ? (
                         <>
                           <Ban className="h-3 w-3 mr-1" />
-                          Blocked
+                          {t('blocked')}
                         </>
                       ) : (
-                        'Enabled'
+                        t('enabled')
                       )}
                     </Badge>
                   </div>
@@ -243,10 +243,10 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  Account management
+                  {t('accountManagement')}
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  Access and manage all your account features
+                  {t('accountManagementDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='p-1 sm:p-6'>

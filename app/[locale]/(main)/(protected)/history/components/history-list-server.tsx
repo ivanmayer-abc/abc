@@ -4,15 +4,13 @@ import { db } from '@/lib/db';
 import { formatter } from '@/lib/utils';
 import { SlotTransactionColumn } from './columns';
 import { Transactions } from './transactions';
-import { getTranslations } from 'next-intl/server';
 
-interface HistoryListProps {
+interface SlotsListServerProps {
   isBlocked: boolean;
 }
 
-const SlotsList = async ({ isBlocked }: HistoryListProps) => {
+export const SlotsListServer = async ({ isBlocked }: SlotsListServerProps) => {
   const timeZone = 'Asia/Kolkata';
-  const t = await getTranslations('SlotTransactions');
 
   const transactions = await db.transaction.findMany({
     where: {
@@ -55,5 +53,3 @@ const SlotsList = async ({ isBlocked }: HistoryListProps) => {
     </div>
   );
 };
-
-export default SlotsList;

@@ -8,10 +8,12 @@ import { CldUploadButton } from "next-cloudinary";
 import IconWithHover from "./image-icon";
 import SendWithHover from "./send-icon";
 import { useSession } from "next-auth/react";
+import { useTranslations } from 'next-intl';
 
 const Form = () => {
     const { supportId } = useConversation();
     const { data: session } = useSession();
+    const t = useTranslations('Support');
 
     const {
         register,
@@ -68,7 +70,7 @@ const Form = () => {
                     register={register}
                     errors={errors}
                     required
-                    placeholder={isChatBlocked ? "You are chat blocked" : "Write a message"}
+                    placeholder={isChatBlocked ? t('chatBlocked') : t('writeMessage')}
                     disabled={isChatBlocked}
                     maxLength={5000}
                 />

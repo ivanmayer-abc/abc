@@ -3,6 +3,8 @@ import getMessages from "@/actions/get-messages";
 import Body from "@/app/[locale]/(main)/(protected)/_components/body";
 import Form from "@/app/[locale]/(main)/(protected)/_components/form";
 import MarkAsReadUser from "./mark-as-read";
+import { useTranslations } from 'next-intl';
+import { getTranslations } from "next-intl/server";
 
 interface IParams {
     supportId: string;
@@ -11,11 +13,12 @@ interface IParams {
 const ConversationId = async ({ params }: { params: IParams }) => {
     const conversation = await getConversationById(params.supportId)
     const messages = await getMessages(params.supportId)
+    const t = await getTranslations('Support');
 
     if (!conversation) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="text-red-600">Conversation not found</div>
+                <div className="text-red-600">{t('conversationNotFound')}</div>
             </div>
         )
     }

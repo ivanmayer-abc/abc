@@ -2,12 +2,14 @@
 
 import { Button } from '@/components/ui/button'
 import { ReactNode, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface BookTabsProps {
   children: ReactNode[]
 }
 
 export default function BookTabs({ children }: BookTabsProps) {
+  const t = useTranslations('Book')
   const [activeTab, setActiveTab] = useState<'events' | 'my-bets'>('events')
 
   return (
@@ -18,14 +20,14 @@ export default function BookTabs({ children }: BookTabsProps) {
           className={`rounded-none border-b-2 ${activeTab === 'events' ? 'border-primary' : 'border-transparent'}`}
           onClick={() => setActiveTab('events')}
         >
-          Events & Betting
+          {t('eventsAndBetting')}
         </Button>
         <Button
           variant="ghost"
           className={`rounded-none border-b-2 ${activeTab === 'my-bets' ? 'border-primary' : 'border-transparent'}`}
           onClick={() => setActiveTab('my-bets')}
         >
-          My Bets
+          {t('myBets')}
         </Button>
       </div>
 

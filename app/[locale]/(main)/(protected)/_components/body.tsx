@@ -9,6 +9,7 @@ import { find } from "lodash";
 import { useSession } from "next-auth/react";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 
 interface BodyProps {
     initialMessages: FullMessageType[];
@@ -21,6 +22,7 @@ const Body: React.FC<BodyProps> = ({ initialMessages }) => {
     const session = useSession();
     const user = session?.data?.user;
     const router = useRouter();
+    const t = useTranslations('Support');
 
     useEffect(() => {
         pusherClient.subscribe(supportId);
@@ -84,7 +86,7 @@ const Body: React.FC<BodyProps> = ({ initialMessages }) => {
                 onClick={handleBackClick}
                 className="fixed md:top-[80px] top-[65px] md:left-3 left-1 flex gap-1 items-center bg-black px-4 py-2 rounded-full"
             >
-                <ChevronLeft />Back
+                <ChevronLeft />{t('back')}
             </button>
             {messages.map((message, i) => (
                 <MessageBox

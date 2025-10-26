@@ -24,6 +24,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface UserBet {
   id: string
@@ -56,6 +57,9 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [bookData, setBookData] = useState<{ date: Date } | null>(null)
   const { refreshBalance } = useBalanceContext()
+  const t = useTranslations('Book')
+  const tMyBets = useTranslations('MyBets')
+  const locale = useLocale()
 
   useEffect(() => {
     const fetchBookData = async () => {
@@ -103,7 +107,7 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
     })
 
     toast.promise(cancelPromise, {
-      loading: 'Cancelling bet...',
+      loading: t('cancelling'),
       success: (message) => message as string,
       error: (error) => error as string,
     })
@@ -131,37 +135,30 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
   const endIndex = startIndex + ITEMS_PER_PAGE
   const currentBets = bets.slice(startIndex, endIndex)
 
-  const calculateBetStats = () => {
-    const totalBets = bets.length
-    const totalStaked = bets.reduce((sum, bet) => sum + bet.amount, 0)
-    const totalPotentialWin = bets
-      .filter(bet => bet.status === 'PENDING')
-      .reduce((sum, bet) => sum + bet.potentialWin, 0)
-    const totalWon = bets
-      .filter(bet => bet.status === 'WON')
-      .reduce((sum, bet) => sum + (bet.potentialWin - bet.amount), 0)
-    const totalLost = bets
-      .filter(bet => bet.status === 'LOST')
-      .reduce((sum, bet) => sum + bet.amount, 0)
-
-    return { totalBets, totalStaked, totalPotentialWin, totalWon, totalLost }
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleString(locale === 'hi' ? 'hi-IN' : 'en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
   }
-
-  const betStats = calculateBetStats()
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>My Bets</CardTitle>
+        <CardTitle>{t('myBets')}</CardTitle>
         <CardDescription>
-          View your betting history and manage active bets
+          {t('viewBettingHistory')}
         </CardDescription>
       </CardHeader>
       <CardContent className='p-2 sm:p-6 -mt-5 sm:mt-0'>
         {bets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <IndianRupee className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>You haven&apos;t placed any bets on this book yet.</p>
+            <p>{t('noBetsOnBook')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -170,14 +167,14 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap pl-4">Event</TableHead>
-                      <TableHead className="whitespace-nowrap">Outcome</TableHead>
-                      <TableHead className="whitespace-nowrap">Stake</TableHead>
-                      <TableHead className="whitespace-nowrap">Odds</TableHead>
-                      <TableHead className="whitespace-nowrap">Potential</TableHead>
-                      <TableHead className="whitespace-nowrap">Status</TableHead>
-                      <TableHead className="whitespace-nowrap">Date</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                      <TableHead className="whitespace-nowrap pl-4">{t('eventColumn')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('outcomeColumn')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('stakeColumn')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{tMyBets('odds')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('potentialColumn')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('statusColumn')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('dateColumn')}</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">{t('actionsColumn')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -206,19 +203,12 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                             bet.status === 'WON' ? 'default' :
                             bet.status === 'LOST' ? 'destructive' : 'outline'
                           }>
-                            {bet.status.toLowerCase()}
+                            {tMyBets(`status.${bet.status.toLowerCase()}`)}
                           </Badge>
                         </TableCell>
                         <TableCell>
                             <div className="text-sm text-muted-foreground">
-                              {new Date(bet.createdAt).toLocaleString('en-IN', {
-                                timeZone: 'Asia/Kolkata',
-                                month: 'short',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                              })}
+                              {formatDate(bet.createdAt)}
                             </div>
                           </TableCell>
                         <TableCell className="text-right whitespace-nowrap">
@@ -234,12 +224,12 @@ export default function MyBetsTab({ initialBets, bookId }: MyBetsTabProps) {
                                 {cancellingBets.has(bet.id) ? (
                                   <>
                                     <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-destructive border-t-transparent" />
-                                    <span className="hidden sm:inline">Cancelling...</span>
+                                    <span className="hidden sm:inline">{t('cancelling')}</span>
                                   </>
                                 ) : (
                                   <>
                                     <X className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">Cancel</span>
+                                    <span className="hidden sm:inline">{t('cancel')}</span>
                                   </>
                                 )}
                               </Button>

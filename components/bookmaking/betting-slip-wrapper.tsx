@@ -3,14 +3,15 @@
 import { Component, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import BettingSlip, { BettingSlipProps } from './betting-slip'
+import { useTranslations } from 'next-intl'
 
 interface ErrorBoundaryState {
   hasError: boolean
   error?: Error
 }
 
-class BettingSlipErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
-  constructor(props: { children: ReactNode }) {
+class BettingSlipErrorBoundary extends Component<{ children: ReactNode; t: (key: string) => string }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode; t: (key: string) => string }) {
     super(props)
     this.state = { hasError: false }
   }
@@ -27,16 +28,16 @@ class BettingSlipErrorBoundary extends Component<{ children: ReactNode }, ErrorB
     if (this.state.hasError) {
       return (
         <div className="p-4 border border-red-300 rounded-lg bg-red-50">
-          <h3 className="text-red-800 font-bold mb-2">Something went wrong</h3>
+          <h3 className="text-red-800 font-bold mb-2">{this.props.t('errorTitle')}</h3>
           <p className="text-red-600 text-sm mb-3">
-            There was an error loading the betting slip.
+            {this.props.t('errorDescription')}
           </p>
           <Button 
             onClick={() => this.setState({ hasError: false })}
             variant="outline"
             size="sm"
           >
-            Try Again
+            {this.props.t('tryAgain')}
           </Button>
         </div>
       )
@@ -47,8 +48,10 @@ class BettingSlipErrorBoundary extends Component<{ children: ReactNode }, ErrorB
 }
 
 export default function BettingSlipWrapper(props: BettingSlipProps) {
+  const t = useTranslations('BettingSlip')
+
   return (
-    <BettingSlipErrorBoundary>
+    <BettingSlipErrorBoundary t={t}>
       <BettingSlip {...props} />
     </BettingSlipErrorBoundary>
   )

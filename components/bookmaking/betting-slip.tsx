@@ -15,6 +15,7 @@ import {
 import Balance from '../balance'
 import { formatter } from '@/lib/utils'
 import { useBalanceContext } from '@/contexts/balance-context'
+import { useTranslations } from 'next-intl'
 
 interface SelectedOutcome {
   id: string
@@ -33,29 +34,29 @@ export interface BettingSlipProps {
 
 const QUICK_BET_AMOUNTS = [100, 500, 1000, 5000]
 
-const safeParseNumber = (value: string): { success: boolean; value: number; error?: string } => {
+const safeParseNumber = (value: string, t: (key: string) => string): { success: boolean; value: number; error?: string } => {
   if (!value || value.trim() === '') {
-    return { success: false, value: 0, error: 'Please enter a bet amount' }
+    return { success: false, value: 0, error: t('enterBetAmount') }
   }
 
   const cleanValue = value.replace(/[^\d.]/g, '')
   
   if (cleanValue === '' || cleanValue === '.') {
-    return { success: false, value: 0, error: 'Please enter a valid number' }
+    return { success: false, value: 0, error: t('enterValidNumber') }
   }
 
   const numberValue = parseFloat(cleanValue)
   
   if (isNaN(numberValue)) {
-    return { success: false, value: 0, error: 'Please enter a valid number' }
+    return { success: false, value: 0, error: t('enterValidNumber') }
   }
 
   if (numberValue <= 0) {
-    return { success: false, value: 0, error: 'Bet amount must be greater than 0' }
+    return { success: false, value: 0, error: t('amountGreaterThanZero') }
   }
 
   if (numberValue < 1) {
-    return { success: false, value: 0, error: 'Minimum bet amount is ₹1' }
+    return { success: false, value: 0, error: t('minimumBetAmount') }
   }
 
   return { success: true, value: Math.round(numberValue * 100) / 100 }
@@ -67,6 +68,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
   const [error, setError] = useState('')
   const [userBalance, setUserBalance] = useState(0)
   const { refreshBalance } = useBalanceContext();
+  const t = useTranslations('BettingSlip')
 
   useEffect(() => {
     if (isOpen) {
@@ -109,7 +111,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
   }
 
   const getCalculatedValues = () => {
-    const parseResult = safeParseNumber(betAmount)
+    const parseResult = safeParseNumber(betAmount, t)
     
     if (!parseResult.success) {
       return {
@@ -142,19 +144,19 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
       const calculated = getCalculatedValues()
       
       if (!calculated.isValid) {
-        setError(calculated.error || 'Invalid bet amount')
+        setError(calculated.error || t('invalidBetAmount'))
         setIsSubmitting(false)
         return
       }
 
       if (calculated.amount > userBalance) {
-        setError(`Insufficient balance. Available: ₹${userBalance.toFixed(2)}`)
+        setError(t('insufficientBalance', { balance: userBalance.toFixed(2) }))
         setIsSubmitting(false)
         return
       }
 
       if (!outcome?.id) {
-        setError('Invalid outcome selection')
+        setError(t('invalidOutcome'))
         setIsSubmitting(false)
         return
       }
@@ -187,7 +189,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
         setBetAmount('')
       } else {
         const errorText = await response.text()
-        let errorMessage = `Failed to place bet: ${response.status}`
+        let errorMessage = t('failedToPlaceBet', { status: response.status })
         
         try {
           const errorData = JSON.parse(errorText)
@@ -200,7 +202,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
       }
     } catch (error: any) {
       console.error('💥 Unexpected error:', error)
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('unexpectedError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -216,10 +218,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
       <DialogContent className="sm:max-w-md bg-black max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Place bet
-            <Badge variant="secondary" className="text-xs">
-              Single
-            </Badge>
+            {t('placeBet')}
           </DialogTitle>
         </DialogHeader>
 
@@ -228,15 +227,15 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
             <CardContent className="pt-6">
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Event</span>
+                  <span className="text-sm text-muted-foreground">{t('event')}</span>
                   <span className="text-sm font-medium text-right">{outcome.eventName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Selection</span>
+                  <span className="text-sm text-muted-foreground">{t('selection')}</span>
                   <span className="text-sm font-medium text-right">{outcome.name}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Odds</span>
+                  <span className="text-sm text-muted-foreground">{t('odds')}</span>
                   <Badge variant="default" className="text-sm">
                     {outcome.odds.toFixed(2)}
                   </Badge>
@@ -246,7 +245,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
           </Card>
 
           <div className="flex justify-between items-center text-sm p-3 bg-blue-50 rounded-lg">
-            <span className="text-muted-foreground">Your balance:</span>
+            <span className="text-muted-foreground">{t('yourBalance')}:</span>
             <span className="font-medium text-blue-700">
               {formatter.format(Number(userBalance))}
             </span>
@@ -254,21 +253,21 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="betAmount">Bet amount</Label>
+              <Label htmlFor="betAmount">{t('betAmount')}</Label>
               <Input
                 id="betAmount"
                 type="text"
                 inputMode="decimal"
                 value={betAmount}
                 onChange={(e) => handleBetAmountChange(e.target.value)}
-                placeholder="Enter amount"
+                placeholder={t('enterAmount')}
                 className="bg-background text-lg font-medium"
                 disabled={isSubmitting}
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Quick bet</Label>
+              <Label className="text-sm text-muted-foreground">{t('quickBet')}</Label>
               <div className="grid grid-cols-4 gap-2">
                 {QUICK_BET_AMOUNTS.map((amount) => (
                   <Button
@@ -292,7 +291,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
                 className="w-full bg-background hover:bg-accent"
                 disabled={isSubmitting || userBalance <= 0}
               >
-                MAX
+                {t('max')}
               </Button>
             </div>
           </div>
@@ -302,7 +301,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
               <CardContent className="pt-6">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Potential win:</span>
+                    <span className="text-sm font-medium">{t('potentialWin')}:</span>
                     <span className={`text-lg font-bold ${calculated.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatter.format(Number(calculated.potentialWin.toFixed(2)))}
                     </span>
@@ -326,7 +325,7 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
               className="flex-1"
               disabled={isSubmitting}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               onClick={placeBet}
@@ -336,10 +335,10 @@ export default function BettingSlip({ isOpen, onClose, outcome, onBetPlaced }: B
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Placing bet...
+                  {t('placingBet')}
                 </>
               ) : (
-                'Place bet'
+                t('placeBetButton')
               )}
             </Button>
           </div>

@@ -6,11 +6,11 @@ import { TransactionColumn } from './columns';
 import { Transactions } from './transactions';
 import { getTranslations } from 'next-intl/server';
 
-interface TransactionsListProps {
+interface TransactionsServerWrapperProps {
   isBlocked: boolean;
 }
 
-const TransactionsList = async ({ isBlocked }: TransactionsListProps) => {
+export const TransactionsServerWrapper = async ({ isBlocked }: TransactionsServerWrapperProps) => {
   const timeZone = 'Asia/Kolkata';
   const t = await getTranslations('Transactions');
 
@@ -69,5 +69,3 @@ const TransactionsList = async ({ isBlocked }: TransactionsListProps) => {
     );
   }
 };
-
-export default TransactionsList;

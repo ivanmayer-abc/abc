@@ -19,6 +19,7 @@ import BettingSlipWrapper from './betting-slip-wrapper'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface SelectedOutcome {
   id: string
@@ -52,10 +53,11 @@ export default function ClientBookmakingDashboard({
   const router = useRouter()
   const [selectedOutcome, setSelectedOutcome] = useState<SelectedOutcome | null>(null)
   const [isSlipOpen, setIsSlipOpen] = useState(false)
+  const t = useTranslations('Events')
 
   const handleOutcomeClick = (outcome: any, event: any, book: any) => {
     if (!session) {
-      router.push(`/login?callbackUrl=/events/${book.id}`)
+      router.push(`/login?callbackUrl=/book/${book.id}`)
       return
     }
 
@@ -63,7 +65,7 @@ export default function ClientBookmakingDashboard({
     const bookDate = new Date(book.date)
     
     if (now >= bookDate) {
-      alert('Bets are no longer accepted for this book as the event has already started.')
+      alert(t('betsClosedAlert'))
       return
     }
 
@@ -110,10 +112,10 @@ export default function ClientBookmakingDashboard({
     <div className="container mx-auto px-4 py-6 lg:space-y-6 space-y-3 pb-[70px] lg:pb-0">
       <div className="lg:space-y-2 space-y-1">
         <h1 className="lg:text-3xl text-xl font-bold tracking-tight">
-          {categoryParam ? `${formatCategoryForDisplay(categoryParam)} betting` : 'Sports betting'}
+          {categoryParam ? t('categoryBetting', { category: formatCategoryForDisplay(categoryParam) }) : t('sportsBetting')}
         </h1>
         <p className="text-muted-foreground text-sm lg:text-md">
-          Place your bets on upcoming events
+          {t('placeBetsDescription')}
         </p>
       </div>
 
@@ -121,19 +123,19 @@ export default function ClientBookmakingDashboard({
         <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <span className="font-medium text-sm sm:text-base">Categories:</span>
+              <span className="font-medium text-sm sm:text-base">{t('categories')}:</span>
               <div className="flex flex-wrap gap-2">
-                <Link href="/events">
+                <Link href="/book">
                   <Button
                     variant={!categoryParam ? 'default' : 'outline'}
                     size="sm"
                     className="text-xs sm:text-sm"
                   >
-                    All events
+                    {t('allEvents')}
                   </Button>
                 </Link>
                 {categories.map(category => (
-                  <Link key={category} href={`/events/category/${formatCategoryForURL(category)}`}>
+                  <Link key={category} href={`/book/category/${formatCategoryForURL(category)}`}>
                     <Button
                       variant={categoryParam && categoryParam.toLowerCase() === category.toLowerCase() ? 'default' : 'outline'}
                       size="sm"
@@ -194,6 +196,7 @@ function ShadcnPagination({
   pagination: PaginationInfo
   onPageChange: (page: number) => void 
 }) {
+  const t = useTranslations('Common')
   const { currentPage, totalPages } = pagination
 
   const getPageNumbers = (): (number | string)[] => {
@@ -229,7 +232,7 @@ function ShadcnPagination({
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t border-border">
       <div className="text-sm text-muted-foreground">
-        Page {currentPage} of {totalPages}
+        {t('pageInfo', { current: currentPage, total: totalPages })}
       </div>
       
       <Pagination>
@@ -291,6 +294,8 @@ function BookCard({
   currentCategory?: string
   isUserLoggedIn: boolean
 }) {
+  const t = useTranslations('Events')
+  const locale = useLocale()
   const bookStatus = book.displayStatus || (book.isLive ? 'LIVE' : 'UPCOMING')
   
   const firstFastBet = book.events?.find(event => event.isFirstFastOption)
@@ -305,6 +310,17 @@ function BookCard({
   const isAcceptingBets = now < bookDate
 
   const displayCategory = book.category.charAt(0).toUpperCase() + book.category.slice(1).toLowerCase()
+
+  // Format date with proper locale and same format as other components
+  const formattedDate = new Date(book.date).toLocaleString(locale === 'hi' ? 'hi-IN' : 'en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: 'long',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
 
   const renderFastBetOutcomes = (event: any, isFirst: boolean = false) => {
     if (!event || !event.outcomes || event.outcomes.length === 0) return null
@@ -359,7 +375,7 @@ function BookCard({
         </div>
         {!isAcceptingBets && (
           <div className="mt-2 text-xs text-muted-foreground text-center">
-            Bets closed - Event started
+            {t('betsClosed')}
           </div>
         )}
       </div>
@@ -395,7 +411,7 @@ function BookCard({
                 <div className='flex'>
                   {!isAcceptingBets && (
                     <Badge variant="outline" className="text-xs bg-destructive/20 text-destructive">
-                      Bets Closed
+                      {t('betsClosedBadge')}
                     </Badge>
                   )}
                 </div>
@@ -404,15 +420,7 @@ function BookCard({
             <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <span className="text-xs sm:text-sm">
-                  {new Date(book.date).toLocaleString('en-IN', {
-                    timeZone: 'Asia/Kolkata',
-                    year: 'numeric',
-                    month: 'long',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                  })}
+                  {formattedDate}
                 </span>
               </div>
               
@@ -420,9 +428,9 @@ function BookCard({
           </div>
         </div>
         
-        <Link href={`/events/${book.id}`} className="w-full sm:w-auto">
+        <Link href={`/book/${book.id}`} className="w-full sm:w-auto">
           <Button size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
-            All outcomes
+            {t('allOutcomes')}
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
           </Button>
         </Link>
@@ -445,7 +453,7 @@ function BookCard({
             ))}
             {book.teams && book.teams.length > 2 && (
               <Badge variant="outline" className="text-xs bg-muted w-fit">
-                +{book.teams.length - 2} more
+                {t('moreTeams', { count: book.teams.length - 2 })}
               </Badge>
             )}
           </div>
@@ -463,7 +471,7 @@ function BookCard({
       {!firstFastBet && !secondFastBet && (
         <div className="text-center py-6 sm:py-8 text-muted-foreground border border-dashed border-border rounded-lg">
           <Trophy className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-          <p className="text-sm sm:text-base">No fast bets available for this book</p>
+          <p className="text-sm sm:text-base">{t('noFastBets')}</p>
         </div>
       )}
     </Card>
@@ -471,23 +479,25 @@ function BookCard({
 }
 
 function NoBooksCard({ category }: { category?: string }) {
+  const t = useTranslations('Events')
+  
   return (
     <Card className="text-center py-8 sm:py-12 bg-card border-border">
       <CardContent>
         <Trophy className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
         <h3 className="text-base sm:text-lg font-semibold mb-2">
-          {category ? `No books found in "${category}" category` : 'No books available'}
+          {category ? t('noBooksInCategory', { category }) : t('noBooksAvailable')}
         </h3>
         <p className="text-muted-foreground mb-4 text-sm sm:text-base">
           {category 
-            ? 'There are no active betting books in this category at the moment.'
-            : 'There are no active betting books at the moment.'
+            ? t('noBooksInCategoryDescription')
+            : t('noBooksAvailableDescription')
           }
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
-          <Link href="/events">
+          <Link href="/book">
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              View All Events
+              {t('viewAllEvents')}
             </Button>
           </Link>
         </div>

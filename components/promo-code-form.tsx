@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, XCircle, Gift, AlertCircle, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatter } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface PromoCodeFormProps {
   hasUsedPromoCode: boolean;
@@ -20,10 +21,11 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
   const [promoDetails, setPromoDetails] = useState<any>(null);
   const [error, setError] = useState('');
   const router = useRouter();
+  const t = useTranslations('PromoCodeForm');
 
   const validateCode = async () => {
     if (!code.trim()) {
-      setError('Please enter a promo code');
+      setError(t('errors.enterCode'));
       return;
     }
     
@@ -47,13 +49,13 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
         setError('');
       } else {
         setIsValid(false);
-        setError(data.error || 'Invalid promo code');
+        setError(data.error || t('errors.invalidCode'));
         setPromoDetails(null);
       }
     } catch (error) {
       console.error('Validation error:', error);
       setIsValid(false);
-      setError('Failed to validate promo code. Please try again.');
+      setError(t('errors.validationFailed'));
       setPromoDetails(null);
     } finally {
       setIsLoading(false);
@@ -76,12 +78,12 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
       if (response.ok) {
         router.refresh();
       } else {
-        setError(data.error || 'Failed to apply promo code');
+        setError(data.error || t('errors.applyFailed'));
         setIsValid(false);
       }
     } catch (error) {
       console.error('Apply error:', error);
-      setError('Failed to apply promo code. Please try again.');
+      setError(t('errors.applyFailed'));
       setIsValid(false);
     } finally {
       setIsLoading(false);
@@ -102,14 +104,13 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
           <div className="p-2 bg-green-500/20 rounded-full">
             <CheckCircle className="h-6 w-6" />
           </div>
-          <span className="font-semibold text-lg">Promo code applied!</span>
+          <span className="font-semibold text-lg">{t('applied.title')}</span>
         </div>
         <div className="bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/20 rounded-xl p-4">
           <p className="text-2xl font-mono font-bold text-green-400">{currentPromoCode}</p>
         </div>
         <p className="text-sm text-gray-400">
-          You have already used a promo code on this account. 
-          Check your active bonuses to track your rewards.
+          {t('applied.description')}
         </p>
       </div>
     );
@@ -119,7 +120,7 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
-          placeholder="ENTER PROMO CODE"
+          placeholder={t('placeholders.enterCode')}
           value={code}
           onChange={(e) => {
             setCode(e.target.value.toUpperCase());
@@ -135,7 +136,7 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
           disabled={!code.trim() || isLoading}
           className="whitespace-nowrap min-w-20 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Validate'}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('buttons.validate')}
         </Button>
       </div>
 
@@ -153,25 +154,25 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               <div className="p-1 bg-green-500/20 rounded">
                 <CheckCircle className="h-4 w-4" />
               </div>
-              <span className="font-semibold">Valid promo code!</span>
+              <span className="font-semibold">{t('valid.title')}</span>
             </div>
             <p className="text-sm text-green-300 mb-4">{promoDetails.description}</p>
             
             <div className="space-y-3 text-sm mb-4 bg-green-500/10 p-3 rounded-lg border border-green-500/20">
               <div className="flex items-center gap-2 font-semibold text-green-400 mb-2">
                 <Sparkles className="h-4 w-4" />
-                You&apos;ll get:
+                {t('valid.youllGet')}
               </div>
               
               {promoDetails.type === 'DEPOSIT_BONUS' && (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className="text-green-300">Bonus percentage</span>
+                    <span className="text-green-300">{t('labels.bonusPercentage')}</span>
                     <span className="font-semibold text-white text-lg">{promoDetails.bonusPercentage}%</span>
                   </div>
                   {promoDetails.maxBonusAmount > 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-green-300">Maximum bonus</span>
+                      <span className="text-green-300">{t('labels.maxBonus')}</span>
                       <span className="font-semibold text-white">
                           {formatter.format(promoDetails.maxBonusAmount)}
                       </span>
@@ -179,14 +180,14 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
                   )}
                   {promoDetails.minDepositAmount > 0 && (
                     <div className="flex justify-between items-center">
-                      <span className="text-green-300">Minimum deposit</span>
+                      <span className="text-green-300">{t('labels.minDeposit')}</span>
                       <span className="font-semibold text-white">
                         {formatter.format(promoDetails.minDepositAmount)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span className="text-green-300">Wagering requirement</span>
+                    <span className="text-green-300">{t('labels.wageringRequirement')}</span>
                     <span>{promoDetails.wageringRequirement}x</span>
                   </div>
                 </>
@@ -195,12 +196,12 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               {promoDetails.type === 'FREE_SPINS' && (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className="text-green-300">Free spins</span>
+                    <span className="text-green-300">{t('labels.freeSpins')}</span>
                     <span className="font-semibold text-white text-lg">{promoDetails.freeSpins}</span>
                   </div>
                   {promoDetails.game && (
                     <div className="flex justify-between items-center">
-                      <span className="text-green-300">Game</span>
+                      <span className="text-green-300">{t('labels.game')}</span>
                       <span className="font-semibold text-white">{promoDetails.game}</span>
                     </div>
                   )}
@@ -209,14 +210,14 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               
               {promoDetails.type === 'CASHBACK' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-green-300">Cashback</span>
+                  <span className="text-green-300">{t('labels.cashback')}</span>
                   <span className="font-semibold text-white text-lg">{promoDetails.cashbackPercentage}%</span>
                 </div>
               )}
               
               {promoDetails.type === 'FREE_BET' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-green-300">Free bet amount</span>
+                  <span className="text-green-300">{t('labels.freeBetAmount')}</span>
                   <span className="font-semibold text-white text-lg">
                     {formatter.format(promoDetails.freeBetAmount)}
                   </span>
@@ -233,12 +234,12 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Applying...
+                  {t('buttons.applying')}
                 </>
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-2" />
-                  Claim Bonus
+                  {t('buttons.claimBonus')}
                 </>
               )}
             </Button>
@@ -251,7 +252,7 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-red-400">
               <XCircle className="h-5 w-5" />
-              <span>Invalid promo code</span>
+              <span>{t('invalid.title')}</span>
             </div>
           </CardContent>
         </Card>
@@ -264,8 +265,8 @@ export function PromoCodeForm({ hasUsedPromoCode, currentPromoCode }: PromoCodeF
               <Gift className="h-3 w-3 text-blue-400" />
             </div>
             <div className="text-xs text-blue-300">
-              <p className="font-medium text-white">One promo code per account</p>
-              <p>Choose wisely - you can only use one promo code on your account</p>
+              <p className="font-medium text-white">{t('disclaimer.title')}</p>
+              <p>{t('disclaimer.description')}</p>
             </div>
           </div>
         </CardContent>
