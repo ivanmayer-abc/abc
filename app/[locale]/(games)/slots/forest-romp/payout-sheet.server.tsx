@@ -55,24 +55,6 @@ export function PayoutsSheet() {
               </div>
             ))}
           </div>
-          
-          <div className="mt-8 bg-gray-800 bg-opacity-50 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-white mb-3">How to Play</h3>
-            <ul className="space-y-2 text-gray-300">
-              <li className="flex items-start">
-                <span className="text-yellow-400 mr-2">•</span>
-                <span>Match 3 symbols horizontally to win</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-yellow-400 mr-2">•</span>
-                <span>More symbols = higher payout</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-yellow-400 mr-2">•</span>
-                <span>Payouts are multiplied by your bet</span>
-              </li>
-            </ul>
-          </div>
         </div>
       </SheetContent>
     </Sheet>

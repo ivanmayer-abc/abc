@@ -36,30 +36,25 @@ export const useBalance = () => {
     }
   };
 
-  const updateBalance = async (amount: number, type: 'deposit' | 'withdrawal', status: 'pending' | 'success' = 'pending') => {
-    try {
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount, type, status }),
-      });
-      
-      if (!response.ok) throw new Error(`Failed to ${type} ${amount}`);
-      
-      await fetchBalance();
-    } catch (error) {
-      console.error(`Error in ${type}:`, error);
-      throw error;
-    }
-  };
-
   useEffect(() => {
     if (status === 'authenticated') {
       fetchBalance();
+      
+      const interval = setInterval(fetchBalance, 10000);
+      return () => clearInterval(interval);
     }
   }, [status]);
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'balance-update' && e.newValue) {
+        fetchBalance();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return { 
     balance, 
@@ -67,7 +62,6 @@ export const useBalance = () => {
     availableBalance: balance?.available ?? 0,
     pendingAmount: balance?.netPending ?? 0,
     isLoading: balance === null,
-    updateBalance,
     refreshBalance: fetchBalance 
   };
 };

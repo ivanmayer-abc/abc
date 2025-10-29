@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
 import { createTransactionWithCommissions } from '@/lib/commission-processor';
+import { BalanceCache } from '@/lib/cached-balance';
 
 export async function GET(req: Request) {
   try {
@@ -48,24 +49,20 @@ export async function GET(req: Request) {
       })
     ]);
 
-    const balanceAggregates = await db.transaction.groupBy({
-      by: ['status', 'type'],
-      where: { userId: user.id },
-      _sum: { amount: true },
-      _count: { id: true }
+    const balanceCache = BalanceCache.getInstance();
+    const availableBalance = await balanceCache.getBalance(user.id);
+    
+    const pendingTransactions = await db.transaction.findMany({
+      where: { 
+        userId: user.id,
+        status: 'pending'
+      }
     });
 
-    let availableBalance = 0;
     let netPending = 0;
-
-    balanceAggregates.forEach(agg => {
-      const amount = agg._sum.amount?.toNumber() || 0;
-      
-      if (agg.status === 'success') {
-        availableBalance += agg.type === 'deposit' ? amount : -amount;
-      } else if (agg.status === 'pending') {
-        netPending += agg.type === 'deposit' ? amount : -amount;
-      }
+    pendingTransactions.forEach(transaction => {
+      const amount = Number(transaction.amount);
+      netPending += transaction.type === 'deposit' ? amount : -amount;
     });
 
     return NextResponse.json({ 
@@ -73,7 +70,7 @@ export async function GET(req: Request) {
       balance: {
         available: availableBalance,
         netPending, 
-        effective: availableBalance
+        effective: availableBalance + netPending
       },
       pagination: {
         page,
@@ -97,6 +94,15 @@ export async function POST(req: Request) {
 
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       return new NextResponse("Invalid amount", { status: 400 });
+    }
+
+    if (type === 'withdrawal') {
+      const balanceCache = BalanceCache.getInstance();
+      const currentBalance = await balanceCache.getBalance(user.id);
+      
+      if (currentBalance < amount) {
+        return new NextResponse("Insufficient funds", { status: 400 });
+      }
     }
 
     const transaction = await db.$transaction(async (tx) => {
@@ -161,6 +167,9 @@ export async function POST(req: Request) {
 
       return newTransaction;
     });
+
+    const balanceCache = BalanceCache.getInstance();
+    balanceCache.invalidateCache(user.id);
 
     return NextResponse.json(transaction);
   } catch (error) {

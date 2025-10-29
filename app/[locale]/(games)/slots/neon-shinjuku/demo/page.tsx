@@ -513,11 +513,11 @@ const SlotMachine = () => {
       
       <div className="flex flex-col items-center xl:justify-center gap-8 text-center min-h-[calc(100vh-100px)] relative z-2">
         <div className="absolute xl:mt-[0px] sm:mt-[0px] mt-[120px] xl:left-[100px] md:left-[50px] z-3">
-          <div className="relative flex justify-center items-center w-[95vw] h-[185px] sm:h-[230px] xl:w-[1000px] max-w-[370px] sm:max-w-[500px] xl:max-w-[1000px] xl:h-[445px] overflow-hidden p-2 rounded-xl xl:px-20 sm:px-12 px-9">
+          <div className="relative flex justify-center items-center w-[95vw] h-[174px] sm:h-[230px] xl:w-[1000px] max-w-[370px] sm:max-w-[500px] xl:max-w-[1000px] xl:h-[442px] overflow-hidden p-2 rounded-xl xl:px-20 sm:px-12 px-9">
             {reels.map((col, colIndex) => renderReel(col, colIndex))}
           </div>
           
-          <div className="absolute inset-0 w-full h-full z-1 xl:top-[110px] sm:top-[63px] top-[57px] -translate-y-1/2 sm:max-w-[500px] xl:max-w-[1000px]">
+          <div className="absolute inset-0 w-full h-full z-1 xl:top-[110px] sm:top-[63px] top-[52px] -translate-y-1/2 sm:max-w-[500px] xl:max-w-[1000px]">
             <Image 
               width={1000}
               src={frameOverlay} 

@@ -10,38 +10,27 @@ import {
 import Autoplay from "embla-carousel-autoplay"
 import Link from "next/link"
 import { useRef } from "react"
-import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
+import Image from "next/image"
 
 const Banners = () => {
   const plugin = useRef(
     Autoplay({ delay: 4000, stopOnInteraction: false })
   )
-  const t = useTranslations('Banners')
+  const locale = useLocale()
 
   const banners = [
     {
-      title: t('slotCollection'),
-      cta: t('getStarted'),
-      href: "/slots",
-      bgColor: "bg-gradient-to-r from-purple-600 to-blue-600"
+      href: "/promo"
     },
     {
-      title: t('betEvents'),
-      cta: t('placeBets'),
-      href: "/book",
-      bgColor: "bg-gradient-to-r from-green-600 to-emerald-600"
+      href: "/book"
     },
     {
-      title: t('fastSupport'),
-      cta: t('chatNow'),
-      href: "/support", 
-      bgColor: "bg-gradient-to-r from-orange-600 to-red-600"
+      href: "/slots"
     },
     {
-      title: t('accountHistory'),
-      cta: t('viewNow'),
-      href: "/history",
-      bgColor: "bg-gradient-to-r from-yellow-600 to-orange-600"
+      href: "/history"
     },
   ];
 
@@ -59,20 +48,25 @@ const Banners = () => {
             {banners.map((banner, index) => (
             <CarouselItem key={index} className="sm:pl-0 pl-2 basis-4/5 md:basis-1/2 lg:basis-1/3">
                 <div className="sm:p-1">
-                    <div className={`${banner.bgColor} border border-white/20 rounded-md overflow-hidden`}>
-                        <div className="flex items-center justify-center p-6 h-[160px] sm:h-[200px] relative">
-                            <div className="absolute top-5 left-5 font-bold uppercase text-lg sm:text-2xl max-w-[70%] text-white drop-shadow-lg">
-                                {banner.title}
-                            </div>
-                            <Link 
-                              href={banner.href} 
-                              className="absolute bottom-5 left-5 bg-white px-4 py-2 rounded-full text-black font-semibold hover:bg-gray-100 transition-colors"
-                              prefetch={false}
-                            >
-                                {banner.cta}
-                            </Link>
-                        </div>
-                    </div>
+                    <Link 
+                      href={banner.href} 
+                      className="block"
+                      prefetch={false}
+                    >
+                      <div className="relative w-full aspect-[3/2] rounded-md overflow-hidden">
+                        <Image
+                          src={`/banners/${index + 1}${locale}.webp`}
+                          alt={`Banner ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 80vw, (max-width: 1024px) 50vw, 33vw"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = `/banners/${index + 1}en.webp`;
+                          }}
+                        />
+                      </div>
+                    </Link>
                 </div>
             </CarouselItem>
             ))}
@@ -85,4 +79,4 @@ const Banners = () => {
   )
 }
 
-export default Banners;
+export default Banners

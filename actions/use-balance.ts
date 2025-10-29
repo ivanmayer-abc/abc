@@ -54,6 +54,31 @@ export const useBalance = () => {
     }
   }, [fetchBalance]);
 
+  const processSpin = useCallback(async (betAmount: number, winAmount: number) => {
+    try {
+      const response = await fetch('/api/slots/spin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ betAmount, winAmount }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process spin');
+      }
+      
+      const result = await response.json();
+      
+      setBalance(result.newBalance);
+      
+      return result;
+    } catch (error) {
+      console.error('Error processing spin:', error);
+      await fetchBalance();
+      throw error;
+    }
+  }, [fetchBalance]);
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDisplayBalance(balance);
@@ -68,5 +93,6 @@ export const useBalance = () => {
     balanceLoading,
     getBalance: fetchBalance,
     updateUserBalance: updateBalance,
+    processSpin
   };
 };

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Banners from "./(main)/_components/banners";
-import UpcomingMatches from "./(main)/_components/upcoming-matches";
-import SlotsMainServer from "./(main)/_components/slots-main-server";
+import UpcomingMatches from "./(main)/_components/upcoming-matches/upcoming-matches";
+import SlotsMainServer from "./(main)/_components/slots-main/slots-main-server";
 import Loading from "../loading";
 import Header from "./(main)/_components/header";
 import LowerNav from "./(main)/_components/lower-nav";
