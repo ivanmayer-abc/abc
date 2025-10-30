@@ -3,6 +3,7 @@ export default {
     build: {
       command: "npm run build",
       output: ".next"
-    }
+    },
+    runtime: "node"
   }
 }
