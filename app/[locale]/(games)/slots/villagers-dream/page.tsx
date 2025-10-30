@@ -48,7 +48,8 @@ const SlotMachine = () => {
     displayBalance,
     balanceLoading,
     getBalance,
-    updateUserBalance
+    updateUserBalance,
+    processSpin
   } = useBalance();
   
   const [bet, setBet] = useState<number>(100);
@@ -64,6 +65,7 @@ const SlotMachine = () => {
   const [volume, setVolume] = useState<number>(0.5);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showMobileControls, setShowMobileControls] = useState<boolean>(false);
+  const [pendingSpin, setPendingSpin] = useState<boolean>(false);
 
   const reelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
@@ -274,81 +276,94 @@ const SlotMachine = () => {
   }, []);
 
 
-  const spinReels = useCallback(async () => {
-    if (balance < bet || spinning || bet < MIN_BET || bet > MAX_BET) {
-      if (autoSpin) {
-        setAutoSpin(false);
-        setRemainingAutoSpins(0);
-      }
-      return;
+const spinReels = useCallback(async () => {
+  if (balance < bet || spinning || pendingSpin || bet < MIN_BET || bet > MAX_BET) {
+    if (autoSpin) {
+      setAutoSpin(false);
+      setRemainingAutoSpins(0);
     }
+    return;
+  }
 
-    setSpinning(true);
-    setWinAmount(0);
-    setWinningLines([]);
+  setSpinning(true);
+  setPendingSpin(true);
+  setWinAmount(0);
+  setWinningLines([]);
 
-    try {
-      await updateUserBalance(bet, 'withdrawal');
-      playSound('buttonClick');
-      playSound('spin', speedMultiplier);
+  try {
+    playSound('buttonClick');
+    playSound('spin', speedMultiplier);
 
-      const finalReels = Array(5).fill(null).map(() => Array(3).fill(null));
+    const finalReels = Array(5).fill(null).map(() => Array(3).fill(null));
 
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 5; col++) {
-          let newSymbol;
-      
-          if (
-            col >= 2 &&
-            finalReels[col - 1][row] === finalReels[col - 2][row] &&
-            Math.random() > 0.75
-          ) {
-            const bannedSymbol = finalReels[col - 1][row];
-            const filteredSymbols = SYMBOLS.filter(s => s.symbol !== bannedSymbol);
-            newSymbol = filteredSymbols[Math.floor(Math.random() * filteredSymbols.length)].symbol;
-          } else {
-            newSymbol = getRandomSymbol();
-          }
-      
-          finalReels[col][row] = newSymbol;
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 5; col++) {
+        let newSymbol;
+    
+        if (
+          col >= 2 &&
+          finalReels[col - 1][row] === finalReels[col - 2][row] &&
+          Math.random() > 0.75
+        ) {
+          const bannedSymbol = finalReels[col - 1][row];
+          const filteredSymbols = SYMBOLS.filter(s => s.symbol !== bannedSymbol);
+          newSymbol = filteredSymbols[Math.floor(Math.random() * filteredSymbols.length)].symbol;
+        } else {
+          newSymbol = getRandomSymbol();
         }
+    
+        finalReels[col][row] = newSymbol;
       }
-      
-      setReels(finalReels);
-      animateReels();
+    }
+    
+    setReels(finalReels);
+    animateReels();
 
-      setTimeout(async () => {
-        const { payout, winningLines } = checkWin(finalReels, bet, isMuted);
-        setWinAmount(payout);
-        setWinningLines(winningLines);
+    setTimeout(async () => {
+      const { payout, winningLines } = checkWin(finalReels, bet, isMuted);
+      setWinAmount(payout);
+      setWinningLines(winningLines);
 
+      try {
+        await processSpin(bet, payout);
+        
         if (payout > 0) {
-          await updateUserBalance(payout, 'deposit');
           playSound('win');
         }
 
-        await getBalance();
         setSpinning(false);
+        setPendingSpin(false);
 
         if (autoSpin && remainingAutoSpins > 0) {
           setRemainingAutoSpins(prev => prev - 1);
           if (remainingAutoSpins <= 1) setAutoSpin(false);
         }
-      }, adjustedAnimationDuration);
-    } catch (error) {
-      console.error("Spin error:", error);
-      setSpinning(false);
-      if (autoSpin) {
-        setAutoSpin(false);
-        setRemainingAutoSpins(0);
+      } catch (error) {
+        console.error("Transaction failed:", error);
+        setSpinning(false);
+        setPendingSpin(false);
+        await getBalance();
+        if (autoSpin) {
+          setAutoSpin(false);
+          setRemainingAutoSpins(0);
+        }
       }
+    }, adjustedAnimationDuration);
+  } catch (error) {
+    console.error("Spin error:", error);
+    setSpinning(false);
+    setPendingSpin(false);
+    if (autoSpin) {
+      setAutoSpin(false);
+      setRemainingAutoSpins(0);
     }
-  }, [balance, bet, spinning, speedMultiplier, autoSpin, remainingAutoSpins, adjustedAnimationDuration, checkWin, updateUserBalance, getBalance]);
+  }
+}, [balance, bet, spinning, pendingSpin, speedMultiplier, autoSpin, remainingAutoSpins, adjustedAnimationDuration, checkWin, processSpin, getBalance]);
   
   useEffect(() => {
-    if (autoSpin && remainingAutoSpins > 0 && !spinning) {
+    if (autoSpin && remainingAutoSpins > 0 && !spinning && !pendingSpin) {
       const interval = setInterval(() => {
-        if (!spinning && remainingAutoSpins > 0 && balance >= bet) {
+        if (!spinning && !pendingSpin && remainingAutoSpins > 0 && balance >= bet) {
           spinReels();
         } else {
           setAutoSpin(false);
@@ -358,7 +373,7 @@ const SlotMachine = () => {
       
       return () => clearInterval(interval);
     }
-  }, [autoSpin, spinning, remainingAutoSpins, adjustedSpinDuration, balance, bet, spinReels]);
+  }, [autoSpin, spinning, pendingSpin, remainingAutoSpins, adjustedSpinDuration, balance, bet, spinReels]);
 
   const animateReels = () => {
     const isMobile = window.innerWidth < 1280;
@@ -536,7 +551,7 @@ const SlotMachine = () => {
 
         <button
           onClick={spinReels}
-          disabled={spinning || autoSpin} 
+          disabled={spinning || autoSpin || pendingSpin}
           className={`absolute bottom-0 mb-[40px] xl:mb-0 md:inset-y-auto flex items-center justify-center xl:w-[220px] w-[150px] xl:h-56 border-2 border-white rounded-full transition-all duration-300 xl:right-[150px] md:right-[50px] xl:mt-0 md:mt-[150px] cursor-pointer z-20 ${
             spinning ? "animate-pulse" : ""
           }`}
@@ -609,7 +624,7 @@ const SlotMachine = () => {
                     playSound('buttonClick');
                     setBet(amount);
                   }} 
-                  disabled={spinning || autoSpin} 
+                  disabled={spinning || autoSpin || pendingSpin}
                   className="text-3xl py-2.5 px-6 hover:scale-105 transition-transform h-full"
                 >
                   {amount}
@@ -625,7 +640,7 @@ const SlotMachine = () => {
                 min={MIN_BET}
                 max={MAX_BET}
                 onChange={(e) => setBet(Math.min(MAX_BET, Math.max(MIN_BET, Number(e.target.value))))}
-                disabled={spinning || autoSpin}
+                disabled={spinning || autoSpin || pendingSpin}
               />
             </div>
 
