@@ -5,7 +5,11 @@ import Form from "@/app/[locale]/(main)/(protected)/_components/form";
 import MarkAsReadUser from "./mark-as-read";
 import { getTranslations } from "next-intl/server";
 
-const ConversationId = async ({ params }: { params: { supportId: string } }) => {
+interface IParams {
+    supportId: string;
+}
+
+const ConversationId = async ({ params }: { params: IParams }) => {
     const conversation = await getConversationById(params.supportId)
     const messages = await getMessages(params.supportId)
     const t = await getTranslations('Support');
