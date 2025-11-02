@@ -8,10 +8,13 @@ const nextConfig = {
     serverComponentsExternalPackages: [],
   },
   images: {
-    domains: [
-      "res.cloudinary.com"
-    ]
-  }
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
+  },
 }
 
 module.exports = withNextIntl(nextConfig);
