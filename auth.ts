@@ -77,6 +77,10 @@ export const {
         session.user.isBlocked = token.isBlocked as boolean;
       }
 
+      if (session.user) {
+        session.user.isImageApproved = token.isImageApproved as string;
+      }
+
       return session;
     },
 
@@ -102,6 +106,7 @@ export const {
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled
       token.isBlocked = existingUser.isBlocked
       token.isChatBlocked = existingUser.isChatBlocked
+      token.isImageApproved = existingUser.isImageApproved
 
       return token
     },

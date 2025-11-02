@@ -14,9 +14,10 @@ const SlotTransactionsPage = async () => {
 
   let slotTransactions: SlotTransactionColumn[] = [];
   
-  if (user?.isImageApproved === "success") {
+  if (userId) {
     const transactions = await db.transaction.findMany({
       where: {
+        userId: userId,
         NOT: [
           { 
             OR: [
@@ -55,26 +56,27 @@ const SlotTransactionsPage = async () => {
     return <HistoryPageClient showAuthRequired isBlocked={false} />;
   }
   
-  if (user?.isImageApproved === "success") {
-    return (
-      <HistoryPageClient 
-        showHistory 
-        isBlocked={isBlocked} 
-        slotTransactions={slotTransactions}
-      />
-    );
-  }
+  // if (user?.isImageApproved === "success") {
+  //   return (
+  //     <HistoryPageClient 
+  //       showHistory 
+  //       isBlocked={isBlocked} 
+  //       slotTransactions={slotTransactions}
+  //     />
+  //   );
+  // }
 
-  if (user?.isImageApproved === "pending") {
-    return <HistoryPageClient showVerificationPending isBlocked={isBlocked} />;
-  }
+  // if (user?.isImageApproved === "pending") {
+  //   return <HistoryPageClient showVerificationPending isBlocked={isBlocked} />;
+  // }
 
   return (
     <HistoryPageClient 
-      showVerificationRequired 
+      showHistory 
       userImage={userImage}
       userId={userId}
       isBlocked={isBlocked}
+      slotTransactions={slotTransactions}
     />
   );
 };

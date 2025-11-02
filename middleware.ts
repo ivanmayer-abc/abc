@@ -52,8 +52,6 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    '/((?!api|_next|_vercel|.*\\..*).*)',
-    '/',
-    '/(en|hi)/:path*'
+    '/((?!_next/static|_next/image|favicon.ico|logo.svg|uploads/).*)'
   ]
 }

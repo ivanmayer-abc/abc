@@ -7,10 +7,11 @@ import { Transactions } from './transactions';
 import { getTranslations } from 'next-intl/server';
 
 interface TransactionsServerWrapperProps {
+  userId: string | undefined;
   isBlocked: boolean;
 }
 
-export const TransactionsServerWrapper = async ({ isBlocked }: TransactionsServerWrapperProps) => {
+export const TransactionsServerWrapper = async ({ userId, isBlocked }: TransactionsServerWrapperProps) => {
   const timeZone = 'Asia/Kolkata';
   const t = await getTranslations('Transactions');
 
@@ -18,6 +19,7 @@ export const TransactionsServerWrapper = async ({ isBlocked }: TransactionsServe
     const [transactions] = await Promise.all([
       db.transaction.findMany({
         where: {
+          userId: userId,
           OR: [
             { category: 'transaction' }
           ]

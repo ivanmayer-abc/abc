@@ -178,13 +178,13 @@ const ProfileClient = ({ user }: ProfileClientProps) => {
 
                 <div className='flex gap-2'>
                     <Button className="w-full justify-start" variant="default" asChild>
-                        <Link href="/deposit" className='flex justify-center'>
+                        <Link href="transactions/new/deposit" className='flex justify-center'>
                             <ArrowBigUp className="h-5 w-5 mr-1" />
                             {t('deposit')}
                         </Link>
                     </Button>
                     <Button className="w-full justify-start" variant="outline" asChild>
-                        <Link href="/withdraw" className='flex justify-center'>
+                        <Link href="transactions/new/withdrawal" className='flex justify-center'>
                             <ArrowBigDown className="h-5 w-5 mr-1" />
                             {t('withdraw')}
                         </Link>

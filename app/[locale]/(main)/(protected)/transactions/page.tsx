@@ -5,6 +5,7 @@ import { TransactionsServerWrapper } from './components/transactions-server-wrap
 
 const TransactionsPage = async () => {
   const user = await currentUser();
+  const userId = user?.id;
   const isBlocked = user?.isBlocked ?? false;
 
   let userImage = null;
@@ -14,22 +15,22 @@ const TransactionsPage = async () => {
     return <TransactionsPageClient showAuthRequired isBlocked={false} />;
   }
 
-  if (user?.isImageApproved === "pending") {
-    return <TransactionsPageClient showVerificationPending isBlocked={isBlocked} />;
-  }
+  // if (user?.isImageApproved === "pending") {
+  //   return <TransactionsPageClient showVerificationPending isBlocked={isBlocked} />;
+  // }
 
-  if (user?.isImageApproved !== "success") {
-    return (
-      <TransactionsPageClient 
-        showVerificationRequired 
-        userImage={userImage}
-        userId={user.id}
-        isBlocked={isBlocked}
-      />
-    );
-  }
+  // if (user?.isImageApproved !== "success") {
+  //   return (
+  //     <TransactionsPageClient 
+  //       showVerificationRequired 
+  //       userImage={userImage}
+  //       userId={user.id}
+  //       isBlocked={isBlocked}
+  //     />
+  //   );
+  // }
 
-  return <TransactionsServerWrapper isBlocked={isBlocked} />;
+  return <TransactionsServerWrapper userId={userId} isBlocked={isBlocked} />;
 };
 
 export default TransactionsPage;
