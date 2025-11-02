@@ -29,6 +29,7 @@
     "@tanstack/react-table": "^8.20.5",
     "@types/bcryptjs": "^2.4.6",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/blob": "^2.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
