@@ -1,8 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
-
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
 export async function GET(
   request: NextRequest,
@@ -22,38 +18,24 @@ export async function GET(
       return NextResponse.json({ error: 'Filename required' }, { status: 400 });
     }
 
-    const filepath = path.join(UPLOAD_DIR, filename);
-    
-    try {
-      const fileBuffer = await readFile(filepath);
-      
-      const contentType = getContentType(filename);
-      
-      return new NextResponse(fileBuffer, {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-        },
-      });
-    } catch (error) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    const response = await fetch(filename);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.status}`);
     }
+
+    const imageData = await response.blob();
+    
+    return new NextResponse(imageData, {
+      status: 200,
+      headers: {
+        'Content-Type': response.headers.get('content-type') || 'image/jpeg',
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+      },
+    });
 
   } catch (error) {
     console.error('Admin image serve error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
-
-function getContentType(filename: string): string {
-  const ext = path.extname(filename).toLowerCase();
-  const contentTypes: { [key: string]: string } = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.webp': 'image/webp',
-  };
-  
-  return contentTypes[ext] || 'application/octet-stream';
 }
