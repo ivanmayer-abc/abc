@@ -16,10 +16,16 @@ export async function saveFile(file: File): Promise<{ url: string; filename: str
 
   const blob = await put(file.name, arrayBuffer, {
     access: 'public',
-    token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 
-  return { url: blob.url, filename: blob.pathname };
+  return { url: blob.url, filename: blob.url };
+}
+
+export async function deleteUserImage(url: string): Promise<void> {
+  try {
+  } catch (error) {
+    console.error('Error in deleteUserImage:', error);
+  }
 }
 
 export function validateFile(file: File): { isValid: boolean; error?: string } {

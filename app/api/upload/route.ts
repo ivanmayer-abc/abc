@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { saveFile, deleteUserImage } from '@/lib/file-upload';
+import { saveFile } from '@/lib/file-upload';
 import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
@@ -18,25 +18,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const { url: filename } = await saveFile(file);
+    const { url } = await saveFile(file);
 
     const existingImage = await db.image.findUnique({
       where: { userId: session.user.id }
     });
 
-    if (existingImage && existingImage.url) {
-      await deleteUserImage(existingImage.url);
-    }
-
     const image = await db.image.upsert({
       where: { userId: session.user.id },
       update: { 
-        url: filename,
+        url: url,
         updatedAt: new Date()
       },
       create: {
         userId: session.user.id,
-        url: filename,
+        url: url,
       }
     });
 
@@ -76,11 +72,11 @@ export async function DELETE(request: NextRequest) {
       where: { userId: session.user.id }
     });
 
-    if (image && image.url) {
-      await deleteUserImage(image.url);
+    if (image) {
       await db.image.delete({
         where: { userId: session.user.id }
       });
+
       await db.user.update({
         where: { id: session.user.id },
         data: { isImageApproved: 'none' }
