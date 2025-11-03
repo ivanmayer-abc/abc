@@ -8,12 +8,14 @@ const nextConfig = {
     serverComponentsExternalPackages: [],
   },
   images: {
+    domains: [],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
       },
     ],
+    unoptimized: true,
   },
 }
 
