@@ -1,12 +1,12 @@
 export interface Book {
   id: string
   title: string
-  description?: string
+  description?: string | null
   date: string
   category: string
-  image?: string
-  championship?: string
-  country?: string
+  image?: string | null
+  championship?: string | null
+  country?: string | null
   isHotEvent: boolean
   isNationalSport: boolean
   status: 'ACTIVE' | 'INACTIVE' | 'COMPLETED'
@@ -24,8 +24,8 @@ export interface Book {
 export interface Team {
   id: string
   name: string
-  image?: string
-  bookId: string
+  image?: string | null
+  bookId?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -36,10 +36,10 @@ export interface Event {
   isFirstFastOption: boolean
   isSecondFastOption: boolean
   bookId: string
-  homeTeam?: Team
-  awayTeam?: Team
-  homeTeamId?: string
-  awayTeamId?: string
+  homeTeam?: Team | null
+  awayTeam?: Team | null
+  homeTeamId?: string | null
+  awayTeamId?: string | null
   createdAt: string
   updatedAt: string
   outcomes: Outcome[]
