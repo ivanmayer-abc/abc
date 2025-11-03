@@ -21,6 +21,7 @@ export default auth((req) => {
   
   const pathnameWithoutLocale = nextUrl.pathname.replace(/^\/(en|hi)/, '') || '/'
   const isPublicRoute = publicRoutes.includes(pathnameWithoutLocale)
+  const isEnPublicRoute = publicRoutes.includes(`/en/${pathnameWithoutLocale}`)
   const isAuthRoute = authRoutes.includes(pathnameWithoutLocale)
 
   if (isApiRoute || isApiAuthRoute || isBookRoute) {
@@ -34,7 +35,7 @@ export default auth((req) => {
     return intlMiddleware(req)
   }
 
-  if (!isLoggedIn && !isPublicRoute) {
+  if (!isLoggedIn && !isPublicRoute && !isEnPublicRoute) {
     let callbackUrl = nextUrl.pathname
     if (nextUrl.search) {
       callbackUrl += nextUrl.search

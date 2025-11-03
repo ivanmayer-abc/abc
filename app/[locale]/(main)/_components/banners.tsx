@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRef } from "react"
 import { useLocale } from 'next-intl'
 import Image from "next/image"
+import { getImageUrl } from '@/lib/images'
 
 const Banners = () => {
   const plugin = useRef(
@@ -55,14 +56,14 @@ const Banners = () => {
                     >
                       <div className="relative w-full aspect-[3/2] rounded-md overflow-hidden">
                         <Image
-                          src={`/banners/${index + 1}${locale}.webp`}
+                          src={getImageUrl(`${index + 1}${locale}.webp`)}
                           alt={`Banner ${index + 1}`}
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 80vw, (max-width: 1024px) 50vw, 33vw"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = `/banners/${index + 1}en.webp`;
+                            target.src = getImageUrl(`${index + 1}en.webp`);
                           }}
                         />
                       </div>

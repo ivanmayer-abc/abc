@@ -13,16 +13,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
       },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: 'altbet.casino',
-      },
     ],
-    domains: ['localhost', 'altbet.casino'],
   },
 }
 
