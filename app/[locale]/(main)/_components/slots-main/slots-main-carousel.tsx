@@ -2,35 +2,36 @@
 
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import SlotGameCard from "./slots-main-game-card"
+import { SLOT_GAME_IMAGES } from '@/lib/images'
 
 const slotGames = [
   {
     name: "Neon Shinjuku",
-    image: "/neon-shinjuku/preview.webp",
+    image: SLOT_GAME_IMAGES.neonShinjuku,
     href: "/slots/neon-shinjuku",
     demoHref: "/slots/neon-shinjuku/demo"
   },
   {
     name: "Maestro",
-    image: "/maestro/preview.webp",
+    image: SLOT_GAME_IMAGES.maestro,
     href: "/slots/maestro",
     demoHref: "/slots/maestro/demo"
   },
   {
     name: "Villager's Dream",
-    image: "/villagers-dream/preview.webp",
+    image: SLOT_GAME_IMAGES.villagersDream,
     href: "/slots/villagers-dream",
     demoHref: "/slots/villagers-dream/demo"
   },
   {
     name: "Rupee Rush",
-    image: "/rupee-rush/preview.webp",
+    image: SLOT_GAME_IMAGES.rupeeRush,
     href: "/slots/rupee-rush",
     demoHref: "/slots/rupee-rush/demo"
   },
   {
     name: "Forest Romp",
-    image: "/forest-romp/preview.webp",
+    image: SLOT_GAME_IMAGES.forestRomp,
     href: "/slots/forest-romp",
     demoHref: "/slots/forest-romp/demo"
   },

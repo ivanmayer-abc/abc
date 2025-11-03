@@ -14,3 +14,11 @@ export const BANNER_IMAGES = {
   '1en': getImageUrl('1en.webp'),
   '1hi': getImageUrl('1hi.webp'),
 } as const;
+
+export const SLOT_GAME_IMAGES = {
+  neonShinjuku: getImageUrl('neon-shinjuku/preview.webp'),
+  maestro: getImageUrl('maestro/preview.webp'),
+  villagersDream: getImageUrl('villagers-dream/preview.webp'),
+  rupeeRush: getImageUrl('rupee-rush/preview.webp'),
+  forestRomp: getImageUrl('forest-romp/preview.webp'),
+} as const;
