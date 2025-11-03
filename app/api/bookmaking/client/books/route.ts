@@ -9,12 +9,24 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
+    const filter = searchParams.get('filter')
+
+    const whereCondition: any = {
+      status: 'ACTIVE'
+    }
+
+    if (category) {
+      whereCondition.category = { equals: category, mode: 'insensitive' }
+    }
+
+    if (filter === 'hot') {
+      whereCondition.isHotEvent = true
+    } else if (filter && filter !== 'all') {
+      whereCondition.championship = { equals: filter, mode: 'insensitive' }
+    }
 
     const books = await db.book.findMany({
-      where: {
-        status: 'ACTIVE',
-        ...(category && { category: { equals: category, mode: 'insensitive' } })
-      },
+      where: whereCondition,
       include: {
         teams: true,
         events: {
@@ -24,6 +36,9 @@ export async function GET(request: Request) {
             outcomes: {
               where: {
                 result: 'PENDING'
+              },
+              orderBy: {
+                order: 'asc'
               }
             }
           },
@@ -34,9 +49,10 @@ export async function GET(request: Request) {
           ]
         }
       },
-      orderBy: {
-        date: 'asc'
-      }
+      orderBy: [
+        { isHotEvent: 'desc' },
+        { date: 'asc' }
+      ]
     })
 
     const booksWithBetInfo = books.map(book => {
@@ -59,6 +75,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(booksWithBetInfo)
   } catch (error) {
+    console.error('Error fetching books:', error)
     return new NextResponse("Internal error", { status: 500 })
   }
 }

@@ -3,7 +3,7 @@ import { calculateUserBalance } from './balance-calculator'
 export class BalanceCache {
   private static instance: BalanceCache
   private cache: Map<string, { balance: number; lastUpdated: number }> = new Map()
-  private readonly CACHE_TTL = 30000
+  private readonly CACHE_TTL = 3000
 
   private constructor() {}
 

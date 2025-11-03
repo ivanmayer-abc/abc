@@ -2,26 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
 import { updateBonusWagering } from '@/lib/bonus-wagering'
-
-async function calculateUserBalance(userId: string): Promise<number> {
-  const transactions = await db.transaction.findMany({
-    where: { 
-      userId: userId, 
-      status: 'success'
-    }
-  })
-
-  return transactions.reduce((sum, transaction) => {
-    const transactionAmount = transaction.amount.toNumber ? transaction.amount.toNumber() : Number(transaction.amount)
-    
-    if (transaction.type === 'deposit') {
-      return sum + transactionAmount
-    } else if (transaction.type === 'withdrawal') {
-      return sum - Math.abs(transactionAmount)
-    }
-    return sum
-  }, 0)
-}
+import { calculateDetailedBalance } from '@/lib/balance-calculator'
 
 export async function POST(req: Request) {
   try {
@@ -33,11 +14,9 @@ export async function POST(req: Request) {
     let body
     try {
       const text = await req.text()
-      
       if (!text) {
         return new NextResponse("Empty request body", { status: 400 })
       }
-
       body = JSON.parse(text)
     } catch (parseError) {
       return new NextResponse("Invalid JSON", { status: 400 })
@@ -57,7 +36,8 @@ export async function POST(req: Request) {
       return new NextResponse("Valid odds are required", { status: 400 })
     }
 
-    const availableBalance = await calculateUserBalance(user.id)
+    const balance = await calculateDetailedBalance(user.id)
+    const availableBalance = balance.available
 
     if (amount > availableBalance) {
       return new NextResponse(`Insufficient balance. Available: ₹${availableBalance.toFixed(2)}`, { status: 400 })
@@ -149,6 +129,7 @@ export async function POST(req: Request) {
     return NextResponse.json(result.bet)
 
   } catch (error: any) {
+    console.error('Bet placement error:', error)
     return new NextResponse("Internal server error", { status: 500 })
   }
 }
@@ -156,15 +137,14 @@ export async function POST(req: Request) {
 export async function GET(request: Request) {
   try {
     const user = await currentUser()
-    if (!user?.id) return new NextResponse("Unauthorized", { status: 401 })
-
-    const { searchParams } = new URL(request.url)
-    const bookId = searchParams.get('bookId')
+    
+    if (!user?.id) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
 
     const bets = await db.bet.findMany({
       where: {
         userId: user.id,
-        ...(bookId && { bookId })
       },
       include: {
         outcome: {
@@ -194,7 +174,7 @@ export async function GET(request: Request) {
       }
     })
 
-    const betsWithBookStatus = bets.map(bet => {
+    const transformedBets = bets.map(bet => {
       const now = new Date()
       const bookDate = new Date(bet.book.date)
       
@@ -202,7 +182,15 @@ export async function GET(request: Request) {
       const isUpcoming = bet.book.status === 'ACTIVE' && now < bookDate
       
       return {
-        ...bet,
+        id: bet.id,
+        amount: Number(bet.amount),
+        potentialWin: Number(bet.potentialWin),
+        status: bet.status,
+        odds: Number(bet.odds),
+        createdAt: bet.createdAt,
+        settledAt: bet.settledAt,
+        outcome: bet.outcome,
+        event: bet.event,
         book: {
           ...bet.book,
           isLive,
@@ -214,9 +202,10 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json(betsWithBookStatus)
+    return NextResponse.json(transformedBets)
+
   } catch (error) {
-    console.log('[CLIENT_BETS_GET]', error)
+    console.error('❌ [BETS_GET_ERROR]', error)
     return new NextResponse("Internal error", { status: 500 })
   }
 }

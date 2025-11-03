@@ -82,7 +82,7 @@ export const useBalance = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDisplayBalance(balance);
-    }, 300);
+    }, 100);
 
     return () => clearTimeout(timeout);
   }, [balance]);

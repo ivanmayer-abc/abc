@@ -42,6 +42,6 @@ export async function calculateDetailedBalance(userId: string) {
   return {
     available: availableBalance,
     netPending, 
-    effective: availableBalance
+    effective: availableBalance + netPending
   };
 }

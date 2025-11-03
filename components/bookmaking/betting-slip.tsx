@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import Balance from '../balance'
 import { formatter } from '@/lib/utils'
 import { useBalanceContext } from '@/contexts/balance-context'
 import { useTranslations } from 'next-intl'

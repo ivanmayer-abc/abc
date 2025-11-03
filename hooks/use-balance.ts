@@ -40,7 +40,7 @@ export const useBalance = () => {
     if (status === 'authenticated') {
       fetchBalance();
       
-      const interval = setInterval(fetchBalance, 10000);
+      const interval = setInterval(fetchBalance, 1000);
       return () => clearInterval(interval);
     }
   }, [status]);
