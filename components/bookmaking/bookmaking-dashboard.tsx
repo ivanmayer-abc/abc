@@ -230,7 +230,7 @@ export default function ClientBookmakingDashboard({
           </div>
           {searchQuery && (
             <p className="text-sm text-muted-foreground mt-2">
-              Searching for: "<span className="font-medium">{searchQuery}</span>"
+              Searching for: &quot;<span className="font-medium">{searchQuery}</span>&quot;
             </p>
           )}
         </CardContent>
@@ -336,7 +336,7 @@ export default function ClientBookmakingDashboard({
                 {searchQuery && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     <Search className="h-3 w-3" />
-                    Search: "{searchQuery}"
+                    Search: &quot;{searchQuery}&quot;
                   </Badge>
                 )}
                 
