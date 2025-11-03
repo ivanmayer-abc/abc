@@ -27,6 +27,50 @@ interface SelectedOutcome {
   bookTitle: string
 }
 
+interface EventOutcome {
+  id: string
+  name: string
+  odds: number
+  result: 'PENDING' | 'WON' | 'LOST' | 'VOID'
+  order: number
+  eventId: string
+  createdAt: string
+  updatedAt: string
+  probability: number
+  stake: number
+  userStake?: number
+}
+
+interface EventTeam {
+  id: string
+  name: string
+  image?: string | null
+  bookId?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+interface Event {
+  id: string
+  name: string
+  description?: string | null
+  status: string
+  isFirstFastOption: boolean
+  isSecondFastOption: boolean
+  bookId: string
+  homeTeam?: EventTeam | null
+  awayTeam?: EventTeam | null
+  homeTeamId?: string | null
+  awayTeamId?: string | null
+  createdAt: string
+  updatedAt: string
+  outcomes: EventOutcome[]
+}
+
+interface EventWithUserStake extends Omit<Event, 'outcomes'> {
+  outcomes: (EventOutcome & { userStake: number })[]
+}
+
 export default function EventsTab({ book, userBets }: EventsTabProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -34,7 +78,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
   const [isSlipOpen, setIsSlipOpen] = useState(false)
   const t = useTranslations('Book')
 
-  const handleOutcomeClick = (outcome: any, event: any) => {
+  const handleOutcomeClick = (outcome: EventOutcome & { userStake: number }, event: EventWithUserStake) => {
     if (!session) {
       router.push(`/login?callbackUrl=/book/${book.id}`)
       return
@@ -61,7 +105,7 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
     window.location.reload()
   }
 
-  const eventsWithUserStake = (book.events || []).map(event => ({
+  const eventsWithUserStake: EventWithUserStake[] = ((book.events || []) as unknown as Event[]).map(event => ({
     ...event,
     outcomes: (event.outcomes || []).map(outcome => ({
       ...outcome,
@@ -77,14 +121,6 @@ export default function EventsTab({ book, userBets }: EventsTabProps) {
     } else {
       return "grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
     }
-  }
-
-  const getButtonClassName = (isUpcoming: boolean, isUserLoggedIn: boolean, outcomesCount: number) => {
-    const baseClass = `h-auto py-4 sm:py-6 px-3 sm:px-4 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
-      outcomesCount <= 4 ? 'lg:flex-1' : ''
-    }`
-    
-    return `${baseClass} cursor-pointer`
   }
 
   const getTextClassName = (isUpcoming: boolean, isUserLoggedIn: boolean) => {
