@@ -8,14 +8,21 @@ const nextConfig = {
     serverComponentsExternalPackages: [],
   },
   images: {
-    domains: [],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'altbet.casino',
+      },
     ],
-    unoptimized: true,
+    domains: ['localhost', 'altbet.casino'],
   },
 }
 
