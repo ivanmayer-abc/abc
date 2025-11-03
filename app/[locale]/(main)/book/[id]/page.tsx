@@ -82,14 +82,44 @@ async function getBookData(bookId: string) {
   const bookDate = new Date(book.date)
   const isLive = book.status === 'ACTIVE' && now >= bookDate
   const isUpcoming = book.status === 'ACTIVE' && now < bookDate
+  const isAcceptingBets = book.status === 'ACTIVE' && now < bookDate
 
   return {
     ...book,
+    date: book.date.toISOString(),
+    createdAt: book.createdAt.toISOString(),
+    updatedAt: book.updatedAt.toISOString(),
     isLive,
     isUpcoming,
+    isAcceptingBets,
     displayStatus: book.status === 'ACTIVE' 
       ? (now >= bookDate ? 'LIVE' : 'UPCOMING')
-      : book.status
+      : book.status,
+    teams: book.teams.map(team => ({
+      ...team,
+      createdAt: team.createdAt.toISOString(),
+      updatedAt: team.updatedAt.toISOString()
+    })),
+    events: book.events.map(event => ({
+      ...event,
+      createdAt: event.createdAt.toISOString(),
+      updatedAt: event.updatedAt.toISOString(),
+      homeTeam: event.homeTeam ? {
+        ...event.homeTeam,
+        createdAt: event.homeTeam.createdAt.toISOString(),
+        updatedAt: event.homeTeam.updatedAt.toISOString()
+      } : null,
+      awayTeam: event.awayTeam ? {
+        ...event.awayTeam,
+        createdAt: event.awayTeam.createdAt.toISOString(),
+        updatedAt: event.awayTeam.updatedAt.toISOString()
+      } : null,
+      outcomes: event.outcomes.map(outcome => ({
+        ...outcome,
+        createdAt: outcome.createdAt.toISOString(),
+        updatedAt: outcome.updatedAt.toISOString()
+      }))
+    }))
   } as Book & { isLive: boolean; isUpcoming: boolean; displayStatus: string }
 }
 
