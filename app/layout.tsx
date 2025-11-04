@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   description: 'Your Alternative Way of Winning',
   icons: {
     icon: [
-      { url: '/logo.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' }
+      { url: 'https://wmbkedgxpkgrfet3.public.blob.vercel-storage.com/logo.svg', type: 'image/svg+xml' },
+      { url: 'https://wmbkedgxpkgrfet3.public.blob.vercel-storage.com/logo.svg', sizes: 'any' }
     ],
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    shortcut: 'https://wmbkedgxpkgrfet3.public.blob.vercel-storage.com/logo.svg',
+    apple: 'https://wmbkedgxpkgrfet3.public.blob.vercel-storage.com/logo.svg',
   },
 }
 
