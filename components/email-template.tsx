@@ -75,13 +75,12 @@ export const EmailTemplate = ({
     
     .button {
       display: inline-block;
-      border: 2px solid linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 14px 32px;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 32px;
       text-align: center;
       margin: 20px 0;
       transition: all 0.3s ease;
@@ -106,7 +105,7 @@ export const EmailTemplate = ({
       font-size: 32px;
       font-weight: bold;
       letter-spacing: 8px;
-      color: white;
+      color: black;
     }
     
     .note {
