@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { put, head } from '@vercel/blob';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -14,8 +14,17 @@ export async function saveFile(file: File): Promise<{ url: string; filename: str
     throw new Error('File size too large');
   }
 
+  let fileExists = false;
+  try {
+    await head(file.name);
+    fileExists = true;
+  } catch (error) {
+    fileExists = false;
+  }
+
   const blob = await put(file.name, arrayBuffer, {
     access: 'public',
+    addRandomSuffix: true
   });
 
   return { url: blob.url, filename: blob.url };

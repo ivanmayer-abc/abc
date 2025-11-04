@@ -18,9 +18,9 @@ export default auth((req) => {
   const isApiRoute = nextUrl.pathname.startsWith('/api')
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
   const isBookRoute = nextUrl.pathname.startsWith(bookRoute)
+  const isDemoRoute = nextUrl.pathname.includes(demoRoute)
   
   const pathnameWithoutLocale = nextUrl.pathname.replace(/^\/(en|hi)/, '') || '/'
-  const isDemoRoute = publicRoutes.includes(demoRoute)
   const isPublicRoute = publicRoutes.includes(pathnameWithoutLocale)
   const isEnPublicRoute = publicRoutes.includes(`/en/${pathnameWithoutLocale}`)
   const isAuthRoute = authRoutes.includes(pathnameWithoutLocale)

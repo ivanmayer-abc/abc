@@ -31,6 +31,7 @@
   },
   "Slots": {
     "slotGames": "स्लॉट गेम्स",
+    "slotGamesDevelopedByAlt": "ALT द्वारा विकसित स्लॉट गेम",
     "viewAll": "सभी देखें",
     "demo": "डेमो",
     "gamePreviewAlt": "{gameName} प्रीव्यू"
