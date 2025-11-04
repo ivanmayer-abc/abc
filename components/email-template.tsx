@@ -75,7 +75,7 @@ export const EmailTemplate = ({
     
     .button {
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: 2px solid linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 14px 32px;
       text-decoration: none;

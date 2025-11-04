@@ -4,7 +4,6 @@ export const publicRoutes = [
     '/slots',
     '/roulette',
     '/instant',
-    '/new-verification'
 ]
 
 export const bookRoute = '/book'
@@ -15,6 +14,8 @@ export const authRoutes = [
     '/register',
     '/error',
     '/reset',
+    '/new-password',
+    '/new-verification'
 ]
 
 export const apiAuthPrefix = '/api/auth'
