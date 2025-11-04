@@ -106,7 +106,7 @@ export const EmailTemplate = ({
       font-size: 32px;
       font-weight: bold;
       letter-spacing: 8px;
-      color: #1f2937;
+      color: white;
     }
     
     .note {
@@ -162,7 +162,7 @@ export const EmailTemplate = ({
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">YourApp</div>
+      <div class="logo">altbet</div>
       <h1>${title}</h1>
     </div>
     
@@ -186,12 +186,7 @@ export const EmailTemplate = ({
     
     <div class="footer">
       <p>If you didn't request this email, you can safely ignore it.</p>
-      <div class="social-links">
-        <a href="#">Website</a> • 
-        <a href="#">Support</a> • 
-        <a href="#">Privacy</a>
-      </div>
-      <p>&copy; ${new Date().getFullYear()} YourApp. All rights reserved.</p>
+      <p>&copy; ${new Date().getFullYear()} altbet. All rights reserved.</p>
     </div>
   </div>
 </body>
