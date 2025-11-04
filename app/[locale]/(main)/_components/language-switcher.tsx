@@ -91,7 +91,9 @@ export default function LanguageSwitcher() {
 
   const onSelectChange = (nextLocale: string) => {
     startTransition(() => {
-      router.replace(pathname, { locale: nextLocale })
+      const newPath = `/${nextLocale}${pathname}`
+      
+      window.location.href = newPath
     })
   }
 
