@@ -9,7 +9,7 @@ export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
     title: "Your Two-Factor Authentication Code",
     content: `
       <p>Hello,</p>
-      <p>Your two-factor authentication code is below. This code will expire in 10 minutes.</p>
+      <p>Your two-factor authentication code is below. This code will expire in 5 minutes.</p>
       <p>Enter this code to complete the sign-in process:</p>
     `,
     note: "For security reasons, this code will expire in 5 minutes. If you didn't request this code, please secure your account immediately."
