@@ -34,7 +34,8 @@
     "slotGamesDevelopedByAlt": "Slots developed by ALT",
     "viewAll": "View all",
     "demo": "DEMO",
-    "gamePreviewAlt": "{gameName} preview"
+    "gamePreviewAlt": "{gameName} preview",
+    "gamePreviewAltAll": "Preview"
   },
   "Events": {
     "sportsBetting": "Sports betting",
