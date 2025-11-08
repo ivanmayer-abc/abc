@@ -40,7 +40,6 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Get conversations for the current user, ordered by lastMessageAt
     const conversations = await db.conversation.findMany({
       where: {
         userId: user.id,

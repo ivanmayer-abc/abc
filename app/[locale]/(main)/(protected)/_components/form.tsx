@@ -8,13 +8,14 @@ import IconWithHover from "./image-icon";
 import SendWithHover from "./send-icon";
 import { useSession } from "next-auth/react";
 import { useTranslations } from 'next-intl';
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const Form = () => {
     const { supportId } = useConversation();
     const { data: session } = useSession();
     const t = useTranslations('Support');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const {
         register,
@@ -40,10 +41,12 @@ const Form = () => {
     };
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (isChatBlocked) return;
+        if (isChatBlocked || isUploading) return;
 
         const file = event.target.files?.[0];
         if (!file) return;
+
+        setIsUploading(true);
 
         try {
             const formData = new FormData();
@@ -60,7 +63,7 @@ const Form = () => {
 
             const data = await response.json();
             
-            axios.post('/api/messages', {
+            await axios.post('/api/messages', {
                 image: data.imageUrl,
                 supportId
             });
@@ -68,6 +71,7 @@ const Form = () => {
         } catch (error) {
             console.error('Image upload error:', error);
         } finally {
+            setIsUploading(false);
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -80,17 +84,18 @@ const Form = () => {
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 className="hidden"
-                disabled={isChatBlocked}
+                disabled={isChatBlocked || isUploading}
             />
             
             <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isChatBlocked}
+                disabled={isChatBlocked || isUploading}
+                className="disabled:opacity-50"
             >
-                <IconWithHover isDisabled={isChatBlocked} />
+                <IconWithHover isDisabled={isChatBlocked || isUploading} />
             </button>
 
             <form
@@ -102,15 +107,16 @@ const Form = () => {
                     register={register}
                     errors={errors}
                     required
-                    placeholder={isChatBlocked ? t('chatBlocked') : t('writeMessage')}
-                    disabled={isChatBlocked}
+                    placeholder={isChatBlocked ? t('chatBlocked') : (isUploading ? t('uploading') : t('writeMessage'))}
+                    disabled={isChatBlocked || isUploading}
                     maxLength={5000}
                 />
                 <button
                     type="submit"
-                    disabled={isChatBlocked}
+                    disabled={isChatBlocked || isUploading}
+                    className="disabled:opacity-50"
                 >
-                    <SendWithHover isDisabled={isChatBlocked} />
+                    <SendWithHover isDisabled={isChatBlocked || isUploading} />
                 </button>
             </form>
         </div>
