@@ -25,7 +25,7 @@ export default function SlotGameCard({ game }: SlotGameCardProps) {
         src={game.image}
         width={400}
         height={400}
-        alt={t('gamePreviewAltAll')}
+        alt='preview'
       />
       <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border-2 border-red-600">
         <h3 className="absolute top-4 left-4 text-white text-xl font-bold">

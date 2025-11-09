@@ -46,6 +46,36 @@ export function DepositPage({
   const router = useRouter();
   const t = useTranslations('Deposit');
 
+  if (isBlocked) {
+    return (
+      <div className="container max-w-2xl pb-[60px] lg:pb-0">
+        <Button onClick={() => router.back()} variant="ghost" className="lg:mb-6 mb-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {t('backToTransactions')}
+        </Button>
+        
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-2xl">{t('accountBlocked')}</CardTitle>
+            <CardDescription className="text-lg">
+              {t('accountBlockedDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t('contactSupport')}
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-2xl pb-[60px] lg:pb-0 px-1">

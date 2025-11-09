@@ -533,5 +533,18 @@
     "city": "City",
     "email": "Email Address",
     "button": "Deposit"
+  },
+  "Footer": {
+    "description": "Providing the best gaming experience with fair play and secure transactions",
+    "legal": "Legal",
+    "terms": "Terms and Conditions",
+    "privacy": "Privacy Policy",
+    "publicOffers": "Public Offers",
+    "amlKyc": "AML/KYC Policy",
+    "support": "Support",
+    "transactions": "Transactions",
+    "history": "History",
+    "copyright": "© {year} altbet. All rights reserved.",
+    "responsibleGaming": "Gambling can be addictive. Play responsibly."
   }
 }

@@ -4,6 +4,10 @@ export const publicRoutes = [
     '/slots',
     '/roulette',
     '/instant',
+    '/aml-kyc-policy',
+    '/privacy-policy',
+    '/public-offers',
+    '/terms-and-conditions'
 ]
 
 export const bookRoute = '/book'
